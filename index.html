@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARC Personalizados | Gravação a Laser, Canecas, Garrafas e Brindes</title>
+<meta name="description" content="ARC Personalizados: gravação a laser em copos e garrafas, canecas, papelaria, camisetas e brindes sob medida. Peça seu orçamento pelo WhatsApp em minutos.">
+<meta name="keywords" content="personalizados, gravação a laser, canecas personalizadas, garrafas personalizadas, brindes, papelaria personalizada, camisetas personalizadas">
+<meta property="og:title" content="ARC Personalizados — Personalizamos seus momentos">
+<meta property="og:description" content="Gravação a laser, canecas, garrafas, papelaria e brindes personalizados com qualidade e criatividade.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #ffffff;
+    --bg-alt: #FAF8F5;
+    --ink: #141414;
+    --ink-soft: #56534E;
+    --ink-faint: #8A8781;
+    --accent: #FF5A1F;
+    --accent-dark: #DB4712;
+    --accent-tint: #FFF1E9;
+    --line: #E9E5DE;
+    --font-display: 'Poppins', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --radius: 14px;
+    --container: 1180px;
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+  html{ scroll-behavior: smooth; }
+  body{
+    font-family: var(--font-body);
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  img{ max-width:100%; display:block; }
+  a{ color:inherit; text-decoration:none; }
+  ul{ list-style:none; }
+  h1,h2,h3,h4{ font-family: var(--font-display); font-weight:700; line-height:1.15; letter-spacing:-0.01em; }
+  .container{ max-width: var(--container); margin:0 auto; padding:0 24px; }
+  section{ position:relative; }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family: var(--font-body); font-weight:600; font-size:13px;
+    letter-spacing:.14em; text-transform:uppercase;
+    color: var(--accent-dark);
+    margin-bottom:14px;
+  }
+  .eyebrow::before{
+    content:""; width:22px; height:2px; background: var(--accent);
+    display:inline-block;
+  }
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:10px;
+    font-family: var(--font-body); font-weight:600; font-size:15px;
+    padding:15px 28px; border-radius:999px; border:2px solid transparent;
+    cursor:pointer; transition: transform .25s ease, box-shadow .25s ease, background .25s ease, color .25s ease;
+    white-space:nowrap;
+  }
+  .btn-primary{ background: var(--accent); color:#fff; box-shadow: 0 8px 20px -8px rgba(255,90,31,.55); }
+  .btn-primary:hover{ background: var(--accent-dark); transform: translateY(-2px); box-shadow: 0 12px 26px -8px rgba(255,90,31,.6); }
+  .btn-outline{ background:transparent; border-color: var(--ink); color: var(--ink); }
+  .btn-outline:hover{ background: var(--ink); color:#fff; transform: translateY(-2px); }
+  .btn-sm{ padding:11px 20px; font-size:14px; }
+
+  /* laser-cut perforation divider */
+  .laser-divider{
+    height:1px; width:100%;
+    background-image: repeating-linear-gradient(90deg, var(--line) 0 10px, transparent 10px 18px);
+  }
+
+  /* ---------- HEADER ---------- */
+  .site-header{
+    position: sticky; top:0; z-index:100;
+    background: rgba(255,255,255,.9);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .site-header .container{
+    display:flex; align-items:center; justify-content:space-between;
+    padding-top:16px; padding-bottom:16px;
+  }
+  .logo{
+    font-family: var(--font-display); font-weight:800; font-size:22px;
+    letter-spacing:-0.02em;
+  }
+  .logo span{ color: var(--accent); }
+  .nav-links{ display:flex; align-items:center; gap:34px; }
+  .nav-links a{
+    font-size:14.5px; font-weight:500; color: var(--ink-soft);
+    position:relative; padding:4px 0;
+    transition: color .2s ease;
+  }
+  .nav-links a:hover{ color: var(--ink); }
+  .nav-links a::after{
+    content:""; position:absolute; left:0; bottom:0; height:2px; width:0;
+    background: var(--accent); transition: width .25s ease;
+  }
+  .nav-links a:hover::after{ width:100%; }
+  .header-actions{ display:flex; align-items:center; gap:18px; }
+  .burger{ display:none; background:none; border:none; cursor:pointer; }
+  .burger span{ display:block; width:24px; height:2px; background:var(--ink); margin:5px 0; }
+
+  /* ---------- HERO ---------- */
+  .hero{ padding:76px 0 96px; background: var(--bg); overflow:hidden; }
+  .hero .container{
+    display:grid; grid-template-columns: 1.05fr .95fr; gap:56px; align-items:center;
+  }
+  .hero-title{
+    font-size: clamp(34px, 4.4vw, 54px);
+    margin-bottom:22px;
+  }
+  .hero-title .laser-line-wrap{ display:block; position:relative; overflow:hidden; }
+  .hero-underline{
+    display:block; margin-top:14px;
+  }
+  .hero-underline svg{ width:100%; max-width:420px; height:14px; display:block; }
+  .hero-underline path{
+    stroke: var(--accent);
+    stroke-width:3;
+    fill:none;
+    stroke-linecap:round;
+    stroke-dasharray: 600;
+    stroke-dashoffset: 600;
+    animation: draw-laser 1.4s .5s cubic-bezier(.65,0,.35,1) forwards;
+  }
+  @keyframes draw-laser{ to{ stroke-dashoffset:0; } }
+  .hero-sub{
+    font-size:17px; color: var(--ink-soft); max-width:520px; margin-bottom:34px;
+  }
+  .hero-actions{ display:flex; gap:16px; flex-wrap:wrap; }
+  .hero-visual{ position:relative; }
+  .hero-grid{
+    display:grid; grid-template-columns: 1fr 1fr; gap:14px;
+  }
+  .hero-grid figure{
+    border-radius: var(--radius); overflow:hidden; margin:0; position:relative;
+    background: var(--bg-alt); border:1px solid var(--line);
+    aspect-ratio: 1/1;
+  }
+  .hero-grid figure:nth-child(2){ margin-top:34px; }
+  .hero-grid figure:nth-child(3){ margin-top:-34px; }
+  .hero-grid img{ width:100%; height:100%; object-fit:cover; transition: transform .5s ease; }
+  .hero-grid figure:hover img{ transform: scale(1.06); }
+  .hero-badge{
+    position:absolute; bottom:-18px; left:-18px;
+    background:#fff; border:1px solid var(--line); border-radius:12px;
+    padding:14px 18px; box-shadow: 0 14px 34px -14px rgba(20,20,20,.25);
+    display:flex; align-items:center; gap:10px; font-size:13.5px; font-weight:600;
+  }
+  .hero-badge .dot{ width:9px; height:9px; border-radius:50%; background: var(--accent); animation: pulse 1.6s infinite; }
+  @keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.35; } }
+
+  /* fade in on scroll */
+  .reveal{ opacity:0; transform: translateY(24px); transition: opacity .7s ease, transform .7s ease; }
+  .reveal.is-visible{ opacity:1; transform:none; }
+
+  /* ---------- SECTION HEADERS ---------- */
+  .section-head{ max-width:640px; margin-bottom:52px; }
+  .section-head.center{ margin-left:auto; margin-right:auto; text-align:center; }
+  .section-head h2{ font-size: clamp(28px, 3vw, 38px); margin-bottom:14px; }
+  .section-head p{ color: var(--ink-soft); font-size:16px; }
+
+  /* ---------- SERVICES ---------- */
+  .services{ padding:100px 0; background: var(--bg-alt); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+  .services-grid{
+    display:grid; grid-template-columns: repeat(4, 1fr); gap:20px;
+  }
+  .service-card{
+    background:#fff; border:1px solid var(--line); border-radius: var(--radius);
+    padding:28px 24px; transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease;
+    position:relative;
+  }
+  .service-card:hover{
+    transform: translateY(-5px);
+    border-color: var(--accent);
+    box-shadow: 0 16px 34px -18px rgba(255,90,31,.45);
+  }
+  .service-icon{
+    width:46px; height:46px; border-radius:10px; background: var(--accent-tint);
+    display:flex; align-items:center; justify-content:center; margin-bottom:16px;
+  }
+  .service-icon svg{ width:24px; height:24px; stroke: var(--accent-dark); }
+  .service-card h3{ font-size:16.5px; margin-bottom:6px; }
+  .service-card p{ font-size:13.8px; color: var(--ink-soft); }
+
+  /* ---------- GALLERY ---------- */
+  .gallery{ padding:100px 0; }
+  .gallery-tabs{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:36px; }
+  .tab-btn{
+    padding:9px 18px; border-radius:999px; border:1px solid var(--line);
+    background:#fff; font-size:13.6px; font-weight:600; cursor:pointer;
+    color: var(--ink-soft); transition: all .2s ease;
+  }
+  .tab-btn:hover{ border-color: var(--accent); color: var(--ink); }
+  .tab-btn.active{ background: var(--ink); color:#fff; border-color: var(--ink); }
+  .gallery-grid{
+    display:grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows:170px; gap:14px;
+  }
+  .gallery-item{
+    border-radius:12px; overflow:hidden; cursor:pointer; position:relative;
+    border:1px solid var(--line); background:var(--bg-alt);
+  }
+  .gallery-item.tall{ grid-row: span 2; }
+  .gallery-item img{ width:100%; height:100%; object-fit:cover; transition: transform .45s ease; }
+  .gallery-item:hover img{ transform: scale(1.08); }
+  .gallery-item::after{
+    content: attr(data-label);
+    position:absolute; left:0; right:0; bottom:0;
+    padding:10px 12px; font-size:12.5px; font-weight:600; color:#fff;
+    background: linear-gradient(to top, rgba(0,0,0,.65), transparent);
+    opacity:0; transition: opacity .25s ease;
+  }
+  .gallery-item:hover::after{ opacity:1; }
+  .gallery-item.hidden{ display:none; }
+
+  /* lightbox */
+  .lightbox{
+    position:fixed; inset:0; background: rgba(15,14,13,.92); z-index:200;
+    display:none; align-items:center; justify-content:center; padding:30px;
+  }
+  .lightbox.open{ display:flex; }
+  .lightbox img{ max-width:90vw; max-height:82vh; border-radius:10px; }
+  .lightbox-close{
+    position:absolute; top:26px; right:30px; color:#fff; font-size:32px;
+    background:none; border:none; cursor:pointer; line-height:1;
+  }
+
+  /* ---------- PRODUCTS ---------- */
+  .products{ padding:100px 0; background: var(--bg-alt); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+  .products-grid{
+    display:grid; grid-template-columns: repeat(4, 1fr); gap:22px;
+  }
+  .product-card{
+    background:#fff; border:1px solid var(--line); border-radius: var(--radius);
+    overflow:hidden; display:flex; flex-direction:column;
+    transition: transform .25s ease, box-shadow .25s ease;
+  }
+  .product-card:hover{ transform: translateY(-5px); box-shadow: 0 18px 36px -20px rgba(20,20,20,.28); }
+  .product-photo{ aspect-ratio: 4/3; overflow:hidden; }
+  .product-photo img{ width:100%; height:100%; object-fit:cover; transition: transform .45s ease; }
+  .product-card:hover .product-photo img{ transform: scale(1.07); }
+  .product-body{ padding:20px 20px 22px; display:flex; flex-direction:column; gap:12px; flex:1; }
+  .product-body h3{ font-size:16.5px; }
+  .product-body p{ font-size:13.6px; color: var(--ink-soft); flex:1; }
+  .product-body .btn{ align-self:flex-start; margin-top:4px; }
+
+  /* ---------- HOW IT WORKS ---------- */
+  .how{ padding:100px 0; }
+  .how-steps{
+    display:grid; grid-template-columns: repeat(5, 1fr); gap:0;
+    position:relative;
+  }
+  .how-steps::before{
+    content:""; position:absolute; top:23px; left:10%; right:10%; height:1px;
+    background-image: repeating-linear-gradient(90deg, var(--line) 0 10px, transparent 10px 18px);
+  }
+  .how-step{ text-align:center; padding:0 14px; position:relative; }
+  .how-num{
+    width:46px; height:46px; border-radius:50%; background:#fff; border:2px solid var(--accent);
+    color: var(--accent-dark); font-family: var(--font-display); font-weight:700; font-size:16px;
+    display:flex; align-items:center; justify-content:center; margin:0 auto 18px;
+    position:relative; z-index:2;
+  }
+  .how-step h3{ font-size:15.5px; margin-bottom:8px; }
+  .how-step p{ font-size:13.2px; color: var(--ink-soft); }
+
+  /* ---------- DIFFERENTIALS ---------- */
+  .differentials{ padding:100px 0; background: var(--ink); color:#fff; }
+  .diff-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:28px; }
+  .diff-item{ padding:22px 0; border-top:1px solid rgba(255,255,255,.14); }
+  .diff-item svg{ width:26px; height:26px; stroke: var(--accent); margin-bottom:14px; }
+  .diff-item h3{ font-size:16px; color:#fff; margin-bottom:6px; }
+  .diff-item p{ font-size:13.5px; color: rgba(255,255,255,.62); }
+  .differentials .section-head h2, .differentials .section-head p{ color:#fff; }
+  .differentials .section-head p{ color: rgba(255,255,255,.62); }
+
+  /* ---------- TESTIMONIALS ---------- */
+  .testimonials{ padding:100px 0; }
+  .test-grid{ display:grid; grid-template-columns: repeat(3,1fr); gap:22px; }
+  .test-card{
+    background: var(--bg-alt); border:1px solid var(--line); border-radius: var(--radius);
+    padding:26px 24px;
+  }
+  .stars{ color: var(--accent); font-size:14px; margin-bottom:14px; letter-spacing:2px; }
+  .test-card p{ font-size:14.3px; color: var(--ink-soft); margin-bottom:18px; }
+  .test-author{ display:flex; align-items:center; gap:10px; font-size:13.5px; font-weight:600; }
+  .test-avatar{ width:34px; height:34px; border-radius:50%; background: var(--accent-tint); color: var(--accent-dark); display:flex; align-items:center; justify-content:center; font-weight:700; font-family: var(--font-display); }
+  .test-card.empty{
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    border-style:dashed; color: var(--ink-faint); font-size:13.6px; font-weight:500;
+  }
+
+  /* ---------- FINAL CTA ---------- */
+  .final-cta{
+    padding:90px 0; text-align:center; background: var(--accent);
+    color:#fff; position:relative; overflow:hidden;
+  }
+  .final-cta::before{
+    content:""; position:absolute; inset:0;
+    background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.05) 0 2px, transparent 2px 22px);
+  }
+  .final-cta h2{ font-size: clamp(28px,3.6vw,42px); margin-bottom:16px; position:relative; }
+  .final-cta p{ font-size:16px; opacity:.92; margin-bottom:32px; position:relative; }
+  .final-cta .btn-primary{ background:#fff; color: var(--accent-dark); box-shadow:0 14px 30px -12px rgba(0,0,0,.35); position:relative; }
+  .final-cta .btn-primary:hover{ background: var(--ink); color:#fff; }
+
+  /* ---------- FOOTER ---------- */
+  .site-footer{ background: var(--ink); color: rgba(255,255,255,.7); padding:64px 0 28px; }
+  .footer-grid{ display:grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap:36px; margin-bottom:44px; }
+  .footer-logo{ font-family: var(--font-display); font-weight:800; font-size:22px; color:#fff; margin-bottom:12px; }
+  .footer-logo span{ color: var(--accent); }
+  .footer-col h4{ color:#fff; font-size:14px; margin-bottom:16px; letter-spacing:.03em; }
+  .footer-col ul li{ margin-bottom:10px; font-size:13.8px; }
+  .footer-col ul li a:hover{ color:#fff; }
+  .footer-socials{ display:flex; gap:12px; margin-top:16px; }
+  .footer-socials a{
+    width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,.2);
+    display:flex; align-items:center; justify-content:center; transition: all .2s ease;
+  }
+  .footer-socials a:hover{ background: var(--accent); border-color: var(--accent); }
+  .footer-socials svg{ width:16px; height:16px; stroke:#fff; }
+  .footer-bottom{
+    border-top:1px solid rgba(255,255,255,.12); padding-top:24px;
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;
+    font-size:12.8px; color: rgba(255,255,255,.45);
+  }
+
+  /* ---------- WHATSAPP FLOAT ---------- */
+  .wa-float{
+    position:fixed; bottom:26px; right:26px; z-index:150;
+    width:60px; height:60px; border-radius:50%;
+    background:#25D366; display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 10px 26px -8px rgba(37,211,102,.6);
+    transition: transform .25s ease;
+  }
+  .wa-float:hover{ transform: scale(1.08); }
+  .wa-float svg{ width:30px; height:30px; fill:#fff; }
+  .wa-float .ring{
+    position:absolute; inset:0; border-radius:50%; border:2px solid #25D366;
+    animation: ring 2s infinite;
+  }
+  @keyframes ring{ 0%{ transform:scale(1); opacity:.7; } 100%{ transform:scale(1.6); opacity:0; } }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 980px){
+    .hero .container{ grid-template-columns:1fr; }
+    .hero-visual{ order:-1; }
+    .services-grid{ grid-template-columns: repeat(2,1fr); }
+    .gallery-grid{ grid-template-columns: repeat(3,1fr); }
+    .products-grid{ grid-template-columns: repeat(2,1fr); }
+    .how-steps{ grid-template-columns: repeat(3,1fr); gap:28px; }
+    .how-steps::before{ display:none; }
+    .diff-grid{ grid-template-columns: repeat(2,1fr); }
+    .test-grid{ grid-template-columns: 1fr; }
+    .footer-grid{ grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 720px){
+    .nav-links{
+      position:fixed; top:66px; left:0; right:0; background:#fff;
+      flex-direction:column; align-items:flex-start; gap:0; padding:10px 24px 20px;
+      border-bottom:1px solid var(--line); transform: translateY(-130%); opacity:0;
+      transition: all .3s ease; pointer-events:none;
+    }
+    .nav-links.open{ transform:none; opacity:1; pointer-events:auto; }
+    .nav-links a{ width:100%; padding:12px 0; border-bottom:1px solid var(--line); }
+    .burger{ display:block; }
+    .header-actions .btn-primary.desktop-only{ display:none; }
+    .services-grid, .products-grid{ grid-template-columns: 1fr 1fr; }
+    .gallery-grid{ grid-template-columns: repeat(2,1fr); grid-auto-rows:140px; }
+    .how-steps{ grid-template-columns: 1fr 1fr; }
+    .diff-grid{ grid-template-columns: 1fr; }
+    .footer-grid{ grid-template-columns: 1fr 1fr; }
+    .footer-bottom{ flex-direction:column; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="container">
+    <a href="#inicio" class="logo">ARC<span>.</span> Personalizados</a>
+    <nav class="nav-links" id="navLinks">
+      <a href="#inicio">Início</a>
+      <a href="#servicos">Serviços</a>
+      <a href="#galeria">Galeria</a>
+      <a href="#produtos">Produtos</a>
+      <a href="#contato">Contato</a>
+    </nav>
+    <div class="header-actions">
+      <a class="btn btn-primary btn-sm desktop-only" href="https://wa.me/5515998402182?text=Ol%C3%A1!%20Quero%20solicitar%20um%20or%C3%A7amento." target="_blank" rel="noopener">Solicitar Orçamento</a>
+      <button class="burger" id="burgerBtn" aria-label="Abrir menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section id="inicio" class="hero">
+  <div class="container">
+    <div class="hero-copy">
+      <p class="eyebrow">Gravação a laser · Brindes · Papelaria</p>
+      <h1 class="hero-title">
+        Personalizamos seus momentos com qualidade e criatividade.
+        <span class="hero-underline">
+          <svg viewBox="0 0 420 14" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 8 C 80 2, 160 12, 240 6 S 380 2, 416 8" />
+          </svg>
+        </span>
+      </h1>
+      <p class="hero-sub">Do copo térmico gravado a laser à papelaria do seu evento: criamos peças únicas para presentear, comemorar e divulgar sua marca — com acabamento impecável e prazos que cabem na sua agenda.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="https://wa.me/5515998402182?text=Ol%C3%A1!%20Quero%20solicitar%20um%20or%C3%A7amento." target="_blank" rel="noopener">Solicitar Orçamento</a>
+        <a class="btn btn-outline" href="#produtos">Ver Produtos</a>
+      </div>
+    </div>
+    <div class="hero-visual reveal">
+      <div class="hero-grid">
+        <figure><img src="https://picsum.photos/seed/arc-caneca/500/500" alt="Caneca personalizada ARC"></figure>
+        <figure><img src="https://picsum.photos/seed/arc-garrafa/500/500" alt="Garrafa gravada a laser"></figure>
+        <figure><img src="https://picsum.photos/seed/arc-camiseta/500/500" alt="Camiseta personalizada"></figure>
+        <figure><img src="https://picsum.photos/seed/arc-copo/500/500" alt="Copo térmico gravado a laser"></figure>
+      </div>
+      <div class="hero-badge"><span class="dot"></span> +500 peças personalizadas entregues</div>
+    </div>
+  </div>
+</section>
+
+<div class="laser-divider"></div>
+
+<!-- SERVIÇOS -->
+<section id="servicos" class="services">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow">O que fazemos</p>
+      <h2>Um serviço para cada tipo de momento</h2>
+      <p>Da gravação a laser à papelaria de evento, cada produto é feito sob medida — com a sua ideia, do seu jeito.</p>
+    </div>
+    <div class="services-grid" id="servicesGrid"></div>
+  </div>
+</section>
+
+<!-- GALERIA -->
+<section id="galeria" class="gallery">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow">Portfólio</p>
+      <h2>Galeria de trabalhos</h2>
+      <p>Uma amostra do que já produzimos — filtre por categoria e clique para ampliar.</p>
+    </div>
+    <div class="gallery-tabs reveal" id="galleryTabs"></div>
+    <div class="gallery-grid reveal" id="galleryGrid"></div>
+  </div>
+</section>
+
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose" aria-label="Fechar">&times;</button>
+  <img id="lightboxImg" src="" alt="Foto ampliada">
+</div>
+
+<!-- PRODUTOS -->
+<section id="produtos" class="products">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow">Catálogo</p>
+      <h2>Produtos em destaque</h2>
+      <p>Escolha o item, fale com a gente pelo WhatsApp e receba seu orçamento na hora.</p>
+    </div>
+    <div class="products-grid" id="productsGrid"></div>
+  </div>
+</section>
+
+<!-- COMO FUNCIONA -->
+<section class="how">
+  <div class="container">
+    <div class="section-head center reveal" style="margin-left:auto;margin-right:auto;">
+      <p class="eyebrow">Processo</p>
+      <h2>Como funciona</h2>
+      <p>Um passo a passo simples, do primeiro contato até a entrega na sua porta.</p>
+    </div>
+    <div class="how-steps reveal">
+      <div class="how-step"><div class="how-num">1</div><h3>Contato</h3><p>Você fala com a gente pelo WhatsApp e conta o que precisa.</p></div>
+      <div class="how-step"><div class="how-num">2</div><h3>Envio da ideia</h3><p>Você envia referências, textos ou logotipo do que imagina.</p></div>
+      <div class="how-step"><div class="how-num">3</div><h3>Aprovação da arte</h3><p>Criamos a arte e você aprova antes de irmos para produção.</p></div>
+      <div class="how-step"><div class="how-num">4</div><h3>Produção</h3><p>Gravamos, imprimimos e finalizamos com todo o cuidado.</p></div>
+      <div class="how-step"><div class="how-num">5</div><h3>Entrega</h3><p>Retirada ou envio — você recebe sua peça pronta e revisada.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- DIFERENCIAIS -->
+<section class="differentials">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow">Por que a ARC</p>
+      <h2>Diferenciais que fazem a diferença</h2>
+    </div>
+    <div class="diff-grid reveal" id="diffGrid"></div>
+  </div>
+</section>
+
+<!-- DEPOIMENTOS -->
+<section class="testimonials">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow">Depoimentos</p>
+      <h2>O que dizem nossos clientes</h2>
+    </div>
+    <div class="test-grid reveal" id="testGrid"></div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="final-cta">
+  <div class="container">
+    <h2>Faça seu orçamento agora!</h2>
+    <p>Resposta rápida, sem compromisso. É só chamar no WhatsApp.</p>
+    <a class="btn btn-primary" href="https://wa.me/5515998402182?text=Ol%C3%A1!%20Quero%20solicitar%20um%20or%C3%A7amento." target="_blank" rel="noopener">Chamar no WhatsApp</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site-footer" id="contato">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-logo">ARC<span>.</span> Personalizados</div>
+        <p style="font-size:13.8px;max-width:260px;">Personalização com qualidade e criatividade para presentear, comemorar e divulgar sua marca.</p>
+        <div class="footer-socials">
+          <a href="#" aria-label="Instagram" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg></a>
+          <a href="https://wa.me/5515998402182" aria-label="WhatsApp" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></a>
+          <a href="#" aria-label="Facebook" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Navegação</h4>
+        <ul>
+          <li><a href="#inicio">Início</a></li>
+          <li><a href="#servicos">Serviços</a></li>
+          <li><a href="#galeria">Galeria</a></li>
+          <li><a href="#produtos">Produtos</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contato</h4>
+        <ul>
+          <li>WhatsApp: (15) 99840-2182</li>
+          <li>Atendimento: seg. a sáb.</li>
+          <li>São Paulo, SP</li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Orçamento</h4>
+        <ul>
+          <li><a href="https://wa.me/5515998402182" target="_blank" rel="noopener">Falar no WhatsApp</a></li>
+          <li><a href="#produtos">Ver catálogo</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="laser-divider" style="background-image: repeating-linear-gradient(90deg, rgba(255,255,255,.14) 0 10px, transparent 10px 18px); margin-bottom:22px;"></div>
+    <div class="footer-bottom">
+      <span>&copy; <span id="year"></span> ARC Personalizados. Todos os direitos reservados.</span>
+      <span>Feito com criatividade, um laser e muito café.</span>
+    </div>
+  </div>
+</footer>
+
+<!-- WHATSAPP FLUTUANTE -->
+<a class="wa-float" href="https://wa.me/5515998402182?text=Ol%C3%A1!%20Quero%20solicitar%20um%20or%C3%A7amento." target="_blank" rel="noopener" aria-label="Fale conosco no WhatsApp">
+  <span class="ring"></span>
+  <svg viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.71.45 3.38 1.3 4.86L2 22l5.35-1.4a9.9 9.9 0 0 0 4.69 1.19h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.51 2 12.04 2zm5.8 14.02c-.24.68-1.4 1.3-1.94 1.38-.5.08-1.13.11-1.83-.12-.42-.13-.96-.31-1.65-.61-2.9-1.25-4.79-4.17-4.94-4.36-.14-.19-1.19-1.58-1.19-3.02 0-1.44.75-2.14 1.02-2.43.27-.29.58-.36.78-.36.19 0 .39 0 .55.01.18.01.42-.07.65.5.24.58.81 2.01.88 2.16.07.15.12.32.02.51-.1.19-.15.31-.29.48-.15.17-.31.37-.44.5-.15.15-.3.31-.13.6.17.29.76 1.25 1.63 2.02 1.12 1 2.06 1.31 2.35 1.46.29.15.46.13.63-.08.17-.21.72-.84.91-1.13.19-.29.38-.24.64-.14.26.1 1.65.78 1.94.92.29.14.48.21.55.33.07.12.07.68-.17 1.36z"/></svg>
+</a>
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+
+/* MOBILE NAV */
+const burger = document.getElementById('burgerBtn');
+const navLinks = document.getElementById('navLinks');
+burger.addEventListener('click', () => navLinks.classList.toggle('open'));
+navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navLinks.classList.remove('open')));
+
+/* SCROLL REVEAL */
+const revealEls = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('is-visible'); io.unobserve(e.target); } });
+}, { threshold: .15 });
+revealEls.forEach(el => io.observe(el));
+
+/* ---------- DATA ---------- */
+const services = [
+  { icon: 'laser', title: 'Gravação a Laser', desc: 'Copos térmicos e garrafas com gravação precisa e duradoura.' },
+  { icon: 'mug', title: 'Canecas Personalizadas', desc: 'Fotos, frases e logos com impressão de alta qualidade.' },
+  { icon: 'bottle', title: 'Garrafas Personalizadas', desc: 'Ideal para presentes corporativos e datas especiais.' },
+  { icon: 'gift', title: 'Lembrancinhas', desc: 'Para casamentos, chás e aniversários com carinho no detalhe.' },
+  { icon: 'calendar', title: 'Mini Calendários', desc: 'Brindes de fim de ano personalizados com a sua marca.' },
+  { icon: 'card', title: 'Cartões de Visita', desc: 'Design profissional que representa o seu negócio.' },
+  { icon: 'flyer', title: 'Panfletos', desc: 'Material impresso para divulgação com arte exclusiva.' },
+  { icon: 'pix', title: 'Placas Pix', desc: 'Placas personalizadas para facilitar o pagamento no seu ponto.' },
+  { icon: 'tag', title: 'Tags', desc: 'Etiquetas personalizadas para produtos e embalagens.' },
+  { icon: 'mousepad', title: 'Mouse Pad', desc: 'Personalize com fotos, logos ou artes exclusivas.' },
+  { icon: 'bag', title: 'Mochila Saco Infantil', desc: 'Bolsas divertidas e personalizadas para a criançada.' },
+  { icon: 'body', title: 'Bodies e Toalhinhas', desc: 'Itens fofos e personalizados para o bebê.' },
+  { icon: 'shirt', title: 'Camisetas', desc: 'Estampas personalizadas para eventos, times e empresas.' },
+  { icon: 'party', title: 'Kit Festa na Mesa', desc: 'Conjunto completo para decorar a mesa da sua festa.' },
+];
+
+const iconPaths = {
+  laser: '<path d="M3 17l6-6M9 11l4-4 4 4-4 4-4-4z"/><path d="M19 5l2 2"/>',
+  mug: '<path d="M4 4h11v9a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V4z"/><path d="M15 8h2a3 3 0 0 1 0 6h-2"/>',
+  bottle: '<path d="M9 2h4v3l1.5 2v13a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1V7L9 5z"/><path d="M8 11h6"/>',
+  gift: '<rect x="3" y="9" width="16" height="11" rx="1"/><path d="M3 13h16"/><path d="M11 9v11"/><path d="M11 9C9 9 7 7.5 7 5.5A2.5 2.5 0 0 1 9.5 3C11 3 11 6 11 9z"/><path d="M11 9c2 0 4-1.5 4-3.5A2.5 2.5 0 0 0 12.5 3C11 3 11 6 11 9z"/>',
+  calendar: '<rect x="3" y="5" width="16" height="15" rx="2"/><path d="M3 10h16"/><path d="M7 3v4"/><path d="M15 3v4"/>',
+  card: '<rect x="2" y="6" width="18" height="12" rx="2"/><path d="M6 15h4"/><path d="M14 10h4"/><path d="M14 13h4"/>',
+  flyer: '<path d="M5 3h11l3 3v15H5z"/><path d="M16 3v3h3"/><path d="M8 12h8"/><path d="M8 16h8"/>',
+  pix: '<rect x="4" y="4" width="14" height="16" rx="2"/><path d="M11 8l3 3-3 3-3-3z"/>',
+  tag: '<path d="M11 3l8 8-8 8-8-8V3z"/><circle cx="7" cy="7" r="1"/>',
+  mousepad: '<rect x="3" y="6" width="16" height="12" rx="3"/><circle cx="14" cy="12" r="2"/>',
+  bag: '<path d="M5 8h12l1 12H4z"/><path d="M8 8V6a3 3 0 0 1 6 0v2"/>',
+  body: '<path d="M7 3h8l1 4-2 2v10H8V9L6 7z"/>',
+  shirt: '<path d="M7 3l-4 3 2 3 2-1v11h8V8l2 1 2-3-4-3-2 2h-2z"/>',
+  party: '<path d="M4 20l3-11 11 3-11 3z"/><path d="M15 4l1 3"/><path d="M19 8l3 1"/><path d="M13 3l2 1"/>'
+};
+
+function iconSVG(name){
+  return `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${iconPaths[name]||iconPaths.tag}</svg>`;
+}
+
+const servicesGrid = document.getElementById('servicesGrid');
+servicesGrid.innerHTML = services.map(s => `
+  <div class="service-card">
+    <div class="service-icon">${iconSVG(s.icon)}</div>
+    <h3>${s.title}</h3>
+    <p>${s.desc}</p>
+  </div>
+`).join('');
+
+/* GALLERY DATA */
+const galleryItems = [
+  { cat:'Canecas', label:'Caneca "Melhor mãe"', seed:'gal-caneca1', tall:true },
+  { cat:'Garrafas', label:'Garrafa corporativa', seed:'gal-garrafa1' },
+  { cat:'Camisetas', label:'Camiseta de time', seed:'gal-camiseta1' },
+  { cat:'Papelaria', label:'Cartão de visita', seed:'gal-cartao1' },
+  { cat:'Festas', label:'Kit festa na mesa', seed:'gal-festa1', tall:true },
+  { cat:'Canecas', label:'Caneca casal', seed:'gal-caneca2' },
+  { cat:'Garrafas', label:'Squeeze gravado', seed:'gal-garrafa2' },
+  { cat:'Papelaria', label:'Mini calendário', seed:'gal-calendario1' },
+  { cat:'Bebês', label:'Body personalizado', seed:'gal-body1' },
+  { cat:'Camisetas', label:'Camiseta divertida', seed:'gal-camiseta2', tall:true },
+  { cat:'Festas', label:'Tags de lembrancinha', seed:'gal-tag1' },
+  { cat:'Bebês', label:'Toalhinha de boca', seed:'gal-toalha1' },
+];
+
+const categories = ['Todos', ...Array.from(new Set(galleryItems.map(g=>g.cat)))];
+const galleryTabs = document.getElementById('galleryTabs');
+galleryTabs.innerHTML = categories.map((c,i)=> `<button class="tab-btn ${i===0?'active':''}" data-cat="${c}">${c}</button>`).join('');
+
+const galleryGrid = document.getElementById('galleryGrid');
+function renderGallery(filter){
+  galleryGrid.innerHTML = galleryItems.map(g => `
+    <div class="gallery-item ${g.tall?'tall':''} ${(filter!=='Todos' && filter!==g.cat) ? 'hidden':''}" data-cat="${g.cat}" data-full="https://picsum.photos/seed/${g.seed}/900/900" data-label="${g.label}">
+      <img loading="lazy" src="https://picsum.photos/seed/${g.seed}/400/400" alt="${g.label}">
+    </div>
+  `).join('');
+  attachLightboxHandlers();
+}
+renderGallery('Todos');
+
+galleryTabs.addEventListener('click', (e)=>{
+  const btn = e.target.closest('.tab-btn');
+  if(!btn) return;
+  galleryTabs.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGallery(btn.dataset.cat);
+});
+
+/* LIGHTBOX */
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightboxImg');
+function attachLightboxHandlers(){
+  galleryGrid.querySelectorAll('.gallery-item').forEach(item=>{
+    item.addEventListener('click', ()=>{
+      lightboxImg.src = item.dataset.full;
+      lightboxImg.alt = item.dataset.label;
+      lightbox.classList.add('open');
+    });
+  });
+}
+document.getElementById('lightboxClose').addEventListener('click', ()=> lightbox.classList.remove('open'));
+lightbox.addEventListener('click', (e)=>{ if(e.target === lightbox) lightbox.classList.remove('open'); });
+
+/* PRODUCTS */
+const products = [
+  { name:'Copo Térmico Gravado a Laser', desc:'Gravação precisa e resistente, ideal para uso diário ou presente.', seed:'prod-copo' },
+  { name:'Caneca Personalizada', desc:'Estampe fotos, frases ou logotipo com acabamento premium.', seed:'prod-caneca' },
+  { name:'Garrafa Personalizada', desc:'Perfeita para brindes corporativos e presentes especiais.', seed:'prod-garrafa' },
+  { name:'Camiseta Personalizada', desc:'Estampas exclusivas para eventos, times e uso pessoal.', seed:'prod-camiseta' },
+  { name:'Kit Festa na Mesa', desc:'Conjunto completo para decorar a mesa de qualquer comemoração.', seed:'prod-kitfesta' },
+  { name:'Cartão de Visita', desc:'Design profissional que causa a primeira boa impressão.', seed:'prod-cartao' },
+  { name:'Placa Pix', desc:'Praticidade e identidade visual para o seu ponto de venda.', seed:'prod-pix' },
+  { name:'Mouse Pad Personalizado', desc:'Traga sua marca ou arte favorita para o dia a dia.', seed:'prod-mousepad' },
+];
+
+const productsGrid = document.getElementById('productsGrid');
+productsGrid.innerHTML = products.map(p => {
+  const msg = encodeURIComponent(`Olá! Quero solicitar um orçamento para: ${p.name}`);
+  return `
+  <div class="product-card">
+    <div class="product-photo"><img loading="lazy" src="https://picsum.photos/seed/${p.seed}/500/380" alt="${p.name}"></div>
+    <div class="product-body">
+      <h3>${p.name}</h3>
+      <p>${p.desc}</p>
+      <a class="btn btn-primary btn-sm" href="https://wa.me/5515998402182?text=${msg}" target="_blank" rel="noopener">Solicitar Orçamento</a>
+    </div>
+  </div>`;
+}).join('');
+
+/* DIFFERENTIALS */
+const diffs = [
+  { icon:'<path d="M13 2 3 14h7l-1 8 11-14h-7z"/>', title:'Atendimento rápido', desc:'Resposta ágil pelo WhatsApp, sem enrolação.' },
+  { icon:'<path d="M12 2l2.9 6.3 6.9.9-5 4.9 1.2 6.9L12 17.8 5.9 21l1.2-6.9-5-4.9 6.9-.9z"/>', title:'Alta qualidade', desc:'Materiais e acabamento pensados para durar.' },
+  { icon:'<path d="M12 2a5 5 0 0 1 5 5v3a5 5 0 0 1-10 0V7a5 5 0 0 1 5-5z"/><path d="M5 21c0-3.9 3.1-7 7-7s7 3.1 7 7"/>', title:'Personalização exclusiva', desc:'Cada peça é feita para o seu pedido, do seu jeito.' },
+  { icon:'<path d="M4 4h16v16H4z"/><path d="M4 9h16"/><path d="M9 4v16"/>', title:'Excelente acabamento', desc:'Atenção aos detalhes em cada etapa da produção.' },
+  { icon:'<path d="M3 7h18M3 12h18M3 17h18"/>', title:'Variedade de produtos', desc:'De canecas a papelaria — tudo em um só lugar.' },
+  { icon:'<path d="M21 11.5a8.4 8.4 0 0 1-8.4 8.4 8.3 8.3 0 0 1-3.8-.9L3 21l1.9-5.8a8.3 8.3 0 0 1-.9-3.8A8.4 8.4 0 0 1 12.6 3a8.4 8.4 0 0 1 8.4 8.5z"/>', title:'Orçamento sem compromisso', desc:'Você pergunta, a gente responde — sem pressão.' },
+];
+document.getElementById('diffGrid').innerHTML = diffs.map(d => `
+  <div class="diff-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${d.icon}</svg>
+    <h3>${d.title}</h3>
+    <p>${d.desc}</p>
+  </div>
+`).join('');
+
+/* TESTIMONIALS */
+const testimonials = [
+  { name:'Mariana S.', text:'A caneca personalizada ficou perfeita, superou minhas expectativas! Atendimento super rápido.' },
+  { name:'Rodrigo A.', text:'Pedi garrafas para o aniversário da empresa e todo mundo elogiou o acabamento da gravação a laser.' },
+];
+const testGrid = document.getElementById('testGrid');
+testGrid.innerHTML = testimonials.map(t => `
+  <div class="test-card">
+    <div class="stars">★★★★★</div>
+    <p>“${t.text}”</p>
+    <div class="test-author"><div class="test-avatar">${t.name[0]}</div>${t.name}</div>
+  </div>
+`).join('') + `<div class="test-card empty">Seu depoimento pode aparecer aqui — envie sua avaliação depois de receber seu pedido!</div>`;
+</script>
+</body>
+</html>
