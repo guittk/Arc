@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Administrativo — ARC Personalizados</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="admin-body">
+
+<header class="admin-header">
+  <div class="container">
+    <a href="index.html" class="logo">ARC<span>.</span> Personalizados</a>
+    <div class="admin-header-actions">
+      <span class="admin-tag">Área do administrador</span>
+      <button class="btn btn-outline btn-sm" id="logoutBtn" style="display:none;">Sair</button>
+      <a href="index.html" class="btn btn-outline btn-sm">Voltar ao site</a>
+    </div>
+  </div>
+</header>
+
+<!-- LOGIN -->
+<section class="login-screen" id="loginSection">
+  <div class="login-card">
+    <div class="login-mark">ARC<span>.</span> Personalizados</div>
+    <p class="eyebrow">Acesso restrito</p>
+    <h1>Entrar no painel</h1>
+    <p>Informe suas credenciais de administrador para gerenciar o conteúdo do site.</p>
+
+    <form id="loginForm">
+      <div class="form-field">
+        <label for="loginEmail">E-mail</label>
+        <input type="email" id="loginEmail" name="email" required placeholder="seuemail@exemplo.com" autocomplete="username">
+      </div>
+      <div class="form-field">
+        <label for="loginPassword">Senha</label>
+        <input type="password" id="loginPassword" name="password" required placeholder="Sua senha" autocomplete="current-password">
+      </div>
+      <p class="admin-login-error" id="loginError"></p>
+      <button type="submit" class="btn btn-primary" id="loginBtn" style="width:100%;justify-content:center;">Entrar</button>
+    </form>
+  </div>
+</section>
+
+<!-- PAINEL -->
+<section class="admin-section" id="adminSection" style="display:none;">
+  <div class="container">
+    <p class="eyebrow">Painel interno</p>
+    <h1>Conteúdo do site</h1>
+    <p>Gerencie tudo o que aparece no site da ARC Personalizados. Clique em Editar/Novo para abrir a janela de edição.</p>
+
+    <!-- CATEGORIAS -->
+    <div class="config-block">
+      <h3>Categorias da galeria</h3>
+      <p class="config-hint">Usadas para organizar e filtrar os trabalhos em "Galeria de trabalhos". Selecionáveis ao criar um item da galeria.</p>
+      <div class="config-list" id="categoriasList"></div>
+      <form id="categoriaForm" class="config-inline-form">
+        <input type="hidden" id="categoriaEditId">
+        <input type="text" id="categoriaLabel" placeholder="Nome da categoria (ex: Canecas)" required>
+        <button type="submit" class="btn btn-outline" id="categoriaSubmitBtn">Adicionar</button>
+        <button type="button" class="btn admin-btn-danger" id="categoriaCancelEdit" style="display:none;">Cancelar</button>
+      </form>
+    </div>
+
+    <!-- O QUE FAZEMOS -->
+    <div class="config-block">
+      <div class="config-block-head">
+        <h3>O que fazemos <span class="config-count" id="servicosCount"></span></h3>
+        <button type="button" class="btn btn-outline" id="addServicoBtn">+ Novo serviço</button>
+      </div>
+      <p class="config-hint">Cards de serviço mostrados na seção "O que fazemos" do site.</p>
+      <div class="config-list" id="servicosList"></div>
+    </div>
+
+    <!-- GALERIA -->
+    <div class="config-block">
+      <div class="config-block-head">
+        <h3>Galeria de trabalhos <span class="config-count" id="galeriaCount"></span></h3>
+        <button type="button" class="btn btn-outline" id="addGaleriaBtn">+ Adicionar trabalho</button>
+      </div>
+      <p class="config-hint">Fotos reais dos trabalhos realizados, exibidas no portfólio do site.</p>
+      <div class="config-list" id="galeriaList"></div>
+    </div>
+
+    <!-- PRODUTOS -->
+    <div class="config-block">
+      <div class="config-block-head">
+        <h3>Produtos em destaque <span class="config-count" id="produtosCount"></span></h3>
+        <button type="button" class="btn btn-outline" id="addProdutoBtn">+ Novo produto</button>
+      </div>
+      <p class="config-hint">Itens do catálogo mostrados na seção "Produtos em destaque".</p>
+      <div class="config-list" id="produtosList"></div>
+    </div>
+
+    <!-- DIFERENCIAIS -->
+    <div class="config-block">
+      <div class="config-block-head">
+        <h3>Diferenciais <span class="config-count" id="diferenciaisCount"></span></h3>
+        <button type="button" class="btn btn-outline" id="addDiferencialBtn">+ Novo diferencial</button>
+      </div>
+      <p class="config-hint">Itens da seção "Por que a ARC" / "Diferenciais que fazem a diferença".</p>
+      <div class="config-list" id="diferenciaisList"></div>
+    </div>
+
+    <!-- DEPOIMENTOS -->
+    <div class="config-block">
+      <div class="config-block-head">
+        <h3>Depoimentos <span class="config-count" id="depoimentosCount"></span></h3>
+        <button type="button" class="btn btn-outline" id="addDepoimentoBtn">+ Novo depoimento</button>
+      </div>
+      <p class="config-hint">Avaliações de clientes mostradas na seção "O que dizem nossos clientes".</p>
+      <div class="config-list" id="depoimentosList"></div>
+    </div>
+  </div>
+</section>
+
+<!-- MODAL: criar/editar item -->
+<div class="modal-overlay" id="formModalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="formModalTitle">Novo item</h3>
+      <button type="button" class="modal-close" id="formModalClose" aria-label="Fechar">✕</button>
+    </div>
+    <form id="itemForm">
+      <input type="hidden" id="itemEditId">
+      <input type="hidden" id="itemContext">
+
+      <div class="form-row">
+        <div class="form-field" id="campoIcon" style="display:none;">
+          <label for="itemIcon">Ícone</label>
+          <select id="itemIcon"></select>
+        </div>
+        <div class="form-field">
+          <label id="itemTituloLabel" for="itemTitulo">Título</label>
+          <input type="text" id="itemTitulo" required placeholder="Ex: Gravação a Laser">
+        </div>
+      </div>
+      <div class="form-field" id="campoCategoria" style="display:none;">
+        <label for="itemCategoria">Categoria (usada nos filtros da galeria)</label>
+        <select id="itemCategoria"></select>
+      </div>
+
+      <div class="form-field" id="campoFoto" style="display:none;">
+        <label for="itemFoto">Foto</label>
+        <input type="file" id="itemFoto" accept="image/*">
+        <div class="form-preview" id="itemFotoPreview"></div>
+      </div>
+
+      <div class="form-field" id="campoTexto">
+        <label id="itemTextoLabel" for="itemTexto">Descrição</label>
+        <textarea id="itemTexto" rows="3"></textarea>
+      </div>
+
+      <p class="config-status" id="itemStatus"></p>
+      <div style="display:flex;gap:12px;">
+        <button type="submit" class="btn btn-primary">Salvar</button>
+        <button type="button" class="btn btn-outline" id="formModalCancel">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: confirmar exclusão -->
+<div class="modal-overlay" id="confirmModalOverlay">
+  <div class="modal modal-small">
+    <div class="modal-head">
+      <h3>Confirmar exclusão</h3>
+      <button type="button" class="modal-close" id="confirmModalClose" aria-label="Fechar">✕</button>
+    </div>
+    <p id="confirmModalMessage"></p>
+    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:26px;">
+      <button type="button" class="btn btn-outline" id="confirmModalCancel">Cancelar</button>
+      <button type="button" class="btn admin-btn-danger" id="confirmModalOk">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="js/firebase-init.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

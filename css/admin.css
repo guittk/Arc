@@ -1,0 +1,119 @@
+.admin-body{ background: var(--bg-alt); }
+
+/* ---------- HEADER ---------- */
+.admin-header{
+  position: sticky; top:0; z-index:100; background: rgba(255,255,255,.92);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.admin-header .container{
+  display:flex; align-items:center; justify-content:space-between; padding:16px 24px;
+}
+.admin-tag{
+  font-size:12px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color: var(--accent-dark);
+}
+.admin-header-actions{ display:flex; align-items:center; gap:14px; }
+
+/* ---------- LOGIN ---------- */
+.login-screen{
+  min-height:100vh; display:flex; align-items:center; justify-content:center; padding:60px 24px;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255,90,31,.08), transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(219,71,18,.08), transparent 45%),
+    var(--bg-alt);
+}
+.login-card{
+  width:100%; max-width:420px; background:#fff; border:1px solid var(--line);
+  border-radius: var(--radius); padding:44px 40px; box-shadow: 0 20px 50px -20px rgba(20,20,20,.18);
+}
+.login-mark{ font-family: var(--font-display); font-weight:800; font-size:20px; margin-bottom:22px; }
+.login-mark span{ color: var(--accent); }
+.login-card h1{ font-size:26px; margin-bottom:10px; }
+.login-card p{ font-size:14px; color: var(--ink-soft); margin-bottom:26px; }
+.admin-login-error{
+  font-size:13px; color:#b3462f; background:rgba(179,70,47,.08); border:1px solid rgba(179,70,47,.25);
+  border-radius: var(--radius); padding:10px 14px; margin-bottom:4px; display:none;
+}
+
+/* ---------- FORMULÁRIOS (compartilhado) ---------- */
+.form-field{ display:flex; flex-direction:column; gap:8px; margin-bottom:18px; }
+.form-field label{ font-size:13.5px; font-weight:600; color: var(--ink); }
+.form-field input[type="text"],
+.form-field input[type="email"],
+.form-field input[type="password"],
+.form-field input[type="number"],
+.form-field select,
+.form-field textarea{
+  border:1px solid var(--line); background:#fff; border-radius: var(--radius);
+  padding:12px 14px; font-family: var(--font-body); font-size:14.5px; color: var(--ink); resize:vertical;
+  width:100%;
+}
+.form-field input:focus, .form-field select:focus, .form-field textarea:focus{ outline:none; border-color: var(--accent); }
+.form-field input[type="file"]{ font-size:13.5px; }
+.form-row{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+@media (max-width:600px){ .form-row{ grid-template-columns:1fr; } }
+
+.form-preview{ display:flex; flex-wrap:wrap; gap:10px; margin-top:2px; }
+.form-thumb{ width:82px; height:82px; border-radius: var(--radius); overflow:hidden; border:1px solid var(--line); }
+.form-thumb img{ width:100%; height:100%; object-fit:cover; }
+
+/* ---------- SEÇÃO ADMIN ---------- */
+.admin-section{ padding:56px 0 100px; }
+.admin-section h1{ margin-bottom:6px; }
+.admin-section > .container > p{ color: var(--ink-soft); margin-bottom:8px; }
+
+.config-block{ margin-top:44px; padding-top:36px; border-top:1px solid var(--line); }
+.config-block:first-child{ margin-top:36px; padding-top:0; border-top:none; }
+.config-block h3{ font-size:19px; margin-bottom:6px; }
+.config-hint{ font-size:13px; color: var(--ink-soft); margin-bottom:20px; max-width:640px; }
+.config-status{ font-size:13px; color: var(--accent-dark); min-height:18px; }
+
+.config-block-head{ display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:6px; }
+.config-block-head h3{ margin-bottom:0; }
+.config-count{ font-size:12.5px; font-weight:500; color: var(--ink-soft); }
+
+.config-list{ display:flex; flex-direction:column; gap:10px; margin-top:16px; margin-bottom:8px; }
+.config-item{
+  display:flex; align-items:center; gap:14px; background:#fff; border:1px solid var(--line);
+  border-radius: var(--radius); padding:12px 16px;
+}
+.config-item-thumb{ width:52px; height:52px; border-radius: var(--radius); object-fit:cover; background: var(--bg-alt); flex-shrink:0; }
+.config-item-body{ flex:1; min-width:0; }
+.config-item-body strong{ display:block; font-size:14px; color: var(--ink); }
+.config-item-body span{ display:block; font-size:12.5px; color: var(--ink-soft); }
+.config-item-actions{ display:flex; gap:8px; flex-shrink:0; }
+.config-item-actions button{
+  border:1px solid var(--line); background:transparent; border-radius: var(--radius);
+  padding:6px 12px; font-size:12.5px; cursor:pointer; color: var(--ink-soft); transition: all .2s ease;
+}
+.config-item-actions button:hover{ border-color: var(--accent); color: var(--accent-dark); }
+.config-item-actions button.danger:hover{ border-color:#b3462f; color:#b3462f; }
+.config-empty{ font-size:13px; color: var(--ink-faint); }
+
+.config-inline-form{ display:flex; gap:10px; flex-wrap:wrap; max-width:520px; }
+.config-inline-form input[type="text"]{
+  flex:1; min-width:200px; border:1px solid var(--line); background:#fff; border-radius: var(--radius);
+  padding:11px 14px; font-family: var(--font-body); font-size:14px; color: var(--ink);
+}
+
+.admin-btn-danger{ background:transparent; color:#b3462f; border:2px solid #e3c5ba; }
+.admin-btn-danger:hover{ background:#fbeee9; }
+
+/* ---------- MODAIS ---------- */
+.modal-overlay{
+  display:none; position:fixed; inset:0; z-index:300; background: rgba(15,14,13,.55);
+  align-items:flex-start; justify-content:center; padding:64px 20px; overflow-y:auto;
+}
+.modal-overlay.open{ display:flex; }
+.modal{
+  width:100%; max-width:640px; background:#fff; border:1px solid var(--line);
+  border-radius: var(--radius); padding:32px 34px; box-shadow: 0 24px 60px -20px rgba(20,20,20,.3);
+}
+.modal.modal-small{ max-width:440px; }
+.modal-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; }
+.modal-head h3{ font-size:19px; margin-bottom:0; }
+.modal-close{
+  background:none; border:none; font-size:18px; line-height:1; cursor:pointer; color: var(--ink-soft); padding:4px;
+}
+.modal-close:hover{ color: var(--ink); }
+.modal p{ color: var(--ink-soft); font-size:14.5px; }
