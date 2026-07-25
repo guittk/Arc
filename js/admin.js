@@ -56,7 +56,8 @@ function renderSettings(settings){
   [1, 2, 3, 4].forEach((n) => {
     const preview = document.getElementById(`heroPhoto${n}Preview`);
     const url = merged[`hero${n}`];
-    preview.innerHTML = url ? `<div class="form-thumb"><img src="${url}"></div>` : '';
+    preview.innerHTML = url ? `<div class="form-thumb"><img src="${url}"></div>` : '<div class="form-thumb form-thumb-empty">Padrão</div>';
+    document.getElementById(`heroPhoto${n}Remove`).style.display = url ? '' : 'none';
   });
 }
 
@@ -72,7 +73,14 @@ Object.entries(settingCheckboxes).forEach(([key, el]) => {
     if (!file) return;
     const dataUrl = await resizeImage(file, 900);
     document.getElementById(`heroPhoto${n}Preview`).innerHTML = `<div class="form-thumb"><img src="${dataUrl}"></div>`;
+    document.getElementById(`heroPhoto${n}Remove`).style.display = '';
     arcDb.ref(`siteConfig/settings/hero${n}`).set(dataUrl);
+  });
+  document.getElementById(`heroPhoto${n}Remove`).addEventListener('click', () => {
+    openConfirmModal(`Remover a foto ${n} do carrossel do Hero? O site volta a mostrar a imagem padrão.`, () => {
+      arcDb.ref(`siteConfig/settings/hero${n}`).remove();
+      document.getElementById(`heroPhoto${n}`).value = '';
+    }, { title: 'Remover foto', confirmLabel: 'Remover' });
   });
 });
 

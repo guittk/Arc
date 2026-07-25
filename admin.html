@@ -64,34 +64,46 @@
       <h3>Configurações</h3>
       <p class="config-hint">Escolha quais seções aparecem no site. Cada alteração é salva automaticamente.</p>
       <div class="config-toggle-list">
-        <label class="config-toggle"><input type="checkbox" id="settingCatalogo" checked> Seção "Catálogo"</label>
-        <label class="config-toggle"><input type="checkbox" id="settingPortfolio"> "Ver todos os trabalhos já entregues" (dentro do Catálogo) — escondido por padrão</label>
-        <label class="config-toggle"><input type="checkbox" id="settingComoFunciona" checked> Seção "Como funciona"</label>
-        <label class="config-toggle"><input type="checkbox" id="settingDepoimentos" checked> Seção "Depoimentos"</label>
-        <label class="config-toggle"><input type="checkbox" id="settingCtaFinal" checked> Seção final "Faça seu orçamento agora"</label>
+        <label class="config-toggle"><span>Seção "Catálogo"</span><input type="checkbox" id="settingCatalogo" checked></label>
+        <label class="config-toggle"><span>"Ver todos os trabalhos já entregues" (dentro do Catálogo) — escondido por padrão</span><input type="checkbox" id="settingPortfolio"></label>
+        <label class="config-toggle"><span>Seção "Como funciona"</span><input type="checkbox" id="settingComoFunciona" checked></label>
+        <label class="config-toggle"><span>Seção "Depoimentos"</span><input type="checkbox" id="settingDepoimentos" checked></label>
+        <label class="config-toggle"><span>Seção final "Faça seu orçamento agora"</span><input type="checkbox" id="settingCtaFinal" checked></label>
       </div>
 
       <p class="config-hint" style="margin-top:24px;">Fotos do carrossel do Hero (as 4 imagens no topo do site).</p>
-      <div class="hero-photo-grid">
-        <div class="form-field">
-          <label for="heroPhoto1">Foto 1</label>
-          <input type="file" id="heroPhoto1" accept="image/*">
+      <div class="hero-photo-list">
+        <div class="hero-photo-row">
           <div class="form-preview" id="heroPhoto1Preview"></div>
+          <div class="form-field hero-photo-field">
+            <label for="heroPhoto1">Foto 1</label>
+            <input type="file" id="heroPhoto1" accept="image/*">
+          </div>
+          <button type="button" class="btn admin-btn-danger btn-sm" id="heroPhoto1Remove">Remover</button>
         </div>
-        <div class="form-field">
-          <label for="heroPhoto2">Foto 2</label>
-          <input type="file" id="heroPhoto2" accept="image/*">
+        <div class="hero-photo-row">
           <div class="form-preview" id="heroPhoto2Preview"></div>
+          <div class="form-field hero-photo-field">
+            <label for="heroPhoto2">Foto 2</label>
+            <input type="file" id="heroPhoto2" accept="image/*">
+          </div>
+          <button type="button" class="btn admin-btn-danger btn-sm" id="heroPhoto2Remove">Remover</button>
         </div>
-        <div class="form-field">
-          <label for="heroPhoto3">Foto 3</label>
-          <input type="file" id="heroPhoto3" accept="image/*">
+        <div class="hero-photo-row">
           <div class="form-preview" id="heroPhoto3Preview"></div>
+          <div class="form-field hero-photo-field">
+            <label for="heroPhoto3">Foto 3</label>
+            <input type="file" id="heroPhoto3" accept="image/*">
+          </div>
+          <button type="button" class="btn admin-btn-danger btn-sm" id="heroPhoto3Remove">Remover</button>
         </div>
-        <div class="form-field">
-          <label for="heroPhoto4">Foto 4</label>
-          <input type="file" id="heroPhoto4" accept="image/*">
+        <div class="hero-photo-row">
           <div class="form-preview" id="heroPhoto4Preview"></div>
+          <div class="form-field hero-photo-field">
+            <label for="heroPhoto4">Foto 4</label>
+            <input type="file" id="heroPhoto4" accept="image/*">
+          </div>
+          <button type="button" class="btn admin-btn-danger btn-sm" id="heroPhoto4Remove">Remover</button>
         </div>
       </div>
     </div>

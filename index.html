@@ -106,21 +106,19 @@
 
 <!-- EXPANSÃO DA CATEGORIA (fotos + orçamento embutido) -->
 <div class="catalog-expand" id="catalogExpand">
-  <div class="catalog-expand-panel">
+  <div class="catalog-expand-panel scroll-thin">
     <button type="button" class="modal-close" id="catalogExpandClose" aria-label="Fechar">&times;</button>
     <p class="eyebrow">Categoria</p>
     <h3 id="catalogExpandTitle"></h3>
     <p id="catalogExpandText"></p>
-    <div class="catalog-expand-scroller">
-      <div class="catalog-expand-grid" id="catalogExpandGrid"></div>
-    </div>
+    <div class="catalog-expand-grid" id="catalogExpandGrid"></div>
     <button type="button" class="btn btn-primary" id="catalogExpandOrcamentoBtn">Solicitar Orçamento</button>
   </div>
 </div>
 
 <!-- MODAL DE ORÇAMENTO -->
 <div class="quote-modal" id="quoteModal">
-  <div class="quote-modal-panel">
+  <div class="quote-modal-panel scroll-thin">
     <button type="button" class="modal-close" id="quoteModalClose" aria-label="Fechar">&times;</button>
     <div id="quoteFormWrap">
       <p class="eyebrow">Orçamento</p>
@@ -137,7 +135,7 @@
         </div>
         <div class="form-field">
           <label>Itens</label>
-          <div class="quote-item-picker" id="quoteItemPicker"></div>
+          <div class="quote-item-picker scroll-thin" id="quoteItemPicker"></div>
         </div>
         <div class="form-field">
           <label for="quoteObs">Observações</label>

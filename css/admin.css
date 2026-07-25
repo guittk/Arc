@@ -49,16 +49,45 @@
   width:100%;
 }
 .form-field input:focus, .form-field select:focus, .form-field textarea:focus{ outline:none; border-color: var(--accent); }
-.form-field input[type="file"]{ font-size:13.5px; }
+
+.form-field input[type="file"]{
+  font-size:13.5px; color: var(--ink-soft); border:none; padding:0;
+}
+.form-field input[type="file"]::file-selector-button,
+.form-field input[type="file"]::-webkit-file-upload-button{
+  margin-right:14px; padding:10px 20px; border-radius:999px; border:1px solid var(--line);
+  background: var(--surface); color: var(--ink); font-family: var(--font-body); font-weight:600;
+  font-size:13px; cursor:pointer; transition: all .2s ease;
+}
+.form-field input[type="file"]:hover::file-selector-button,
+.form-field input[type="file"]:hover::-webkit-file-upload-button{
+  border-color: var(--accent); color: var(--accent-dark);
+}
 .form-row{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
 @media (max-width:600px){ .form-row{ grid-template-columns:1fr; } }
 
 .form-preview{ display:flex; flex-wrap:wrap; gap:10px; margin-top:2px; }
 .form-thumb{ width:82px; height:82px; border-radius: var(--radius); overflow:hidden; border:1px solid var(--line); }
 .form-thumb img{ width:100%; height:100%; object-fit:cover; }
+.form-thumb-empty{
+  display:flex; align-items:center; justify-content:center; text-align:center;
+  background: var(--bg-alt); color: var(--ink-faint); font-size:10.5px; font-weight:600;
+  text-transform:uppercase; letter-spacing:.03em; padding:4px;
+}
 
-.hero-photo-grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap:18px; }
-@media (max-width:700px){ .hero-photo-grid{ grid-template-columns: repeat(2, 1fr); } }
+.hero-photo-list{ display:flex; flex-direction:column; gap:12px; }
+.hero-photo-row{
+  display:flex; align-items:center; gap:16px; background: var(--surface);
+  border:1px solid var(--line); border-radius: var(--radius); padding:12px 16px;
+}
+.hero-photo-row .form-preview{ margin:0; flex-shrink:0; }
+.hero-photo-row .form-thumb{ width:64px; height:64px; }
+.hero-photo-field{ flex:1; min-width:0; margin-bottom:0; }
+.hero-photo-row .btn-sm{ flex-shrink:0; }
+@media (max-width:600px){
+  .hero-photo-row{ flex-wrap:wrap; }
+  .hero-photo-field{ order:3; flex-basis:100%; }
+}
 
 /* ---------- SEÇÃO ADMIN ---------- */
 .admin-section{ padding:56px 0 100px; }
@@ -75,13 +104,31 @@
 .config-block-head h3{ margin-bottom:0; }
 .config-count{ font-size:12.5px; font-weight:500; color: var(--ink-soft); }
 
-.config-toggle-list{ display:flex; flex-direction:column; gap:12px; }
+.config-toggle-list{ display:flex; flex-direction:column; gap:10px; }
 .config-toggle{
-  display:flex; align-items:center; gap:10px; font-size:14px; color: var(--ink);
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  font-size:14px; color: var(--ink);
   background: var(--surface); border:1px solid var(--line); border-radius: var(--radius);
-  padding:12px 16px; cursor:pointer;
+  padding:14px 16px; cursor:pointer; transition: border-color .2s ease;
 }
-.config-toggle input{ width:16px; height:16px; accent-color: var(--accent); cursor:pointer; flex-shrink:0; }
+.config-toggle:hover{ border-color: var(--accent); }
+.config-toggle span{ flex:1; }
+
+/* switch estilo iOS, a partir de um checkbox nativo (mantém acessibilidade) */
+.config-toggle input[type="checkbox"]{
+  appearance:none; -webkit-appearance:none; -moz-appearance:none;
+  width:42px; height:24px; flex-shrink:0; margin:0;
+  border-radius:999px; border:1px solid var(--line); background: var(--bg-alt);
+  position:relative; cursor:pointer; transition: background .2s ease, border-color .2s ease;
+}
+.config-toggle input[type="checkbox"]::after{
+  content:""; position:absolute; top:2px; left:2px; width:18px; height:18px;
+  border-radius:50%; background:#fff; box-shadow: 0 1px 3px rgba(0,0,0,.35);
+  transition: transform .2s ease;
+}
+.config-toggle input[type="checkbox"]:checked{ background: var(--accent); border-color: var(--accent); }
+.config-toggle input[type="checkbox"]:checked::after{ transform: translateX(18px); }
+.config-toggle input[type="checkbox"]:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
 
 .config-list{ display:flex; flex-direction:column; gap:10px; margin-top:16px; margin-bottom:8px; }
 .config-item{

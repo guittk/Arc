@@ -65,6 +65,13 @@ h1,h2,h3,h4{ font-family: var(--font-display); font-weight:700; line-height:1.15
 .container{ max-width: var(--container); margin:0 auto; padding:0 24px; }
 section{ position:relative; }
 #inicio, #catalogo, #contato{ scroll-margin-top: 90px; }
+
+/* scrollbar fina e discreta para qualquer área com rolagem interna */
+.scroll-thin{ scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+.scroll-thin::-webkit-scrollbar{ width:8px; height:8px; }
+.scroll-thin::-webkit-scrollbar-track{ background:transparent; }
+.scroll-thin::-webkit-scrollbar-thumb{ background: var(--line); border-radius:999px; }
+.scroll-thin::-webkit-scrollbar-thumb:hover{ background: var(--accent); }
 .eyebrow{
   display:inline-flex; align-items:center; gap:8px;
   font-family: var(--font-body); font-weight:600; font-size:13px;
@@ -231,22 +238,19 @@ section{ position:relative; }
 }
 .catalog-expand.open{ display:flex; }
 .catalog-expand-panel{
-  background: var(--surface); border-radius: var(--radius); max-width:840px; width:100%;
-  max-height:86vh; overflow-y:auto; padding:36px; position:relative; margin:auto;
+  background: var(--surface); border-radius: var(--radius); max-width:900px; width:100%;
+  max-height:88vh; overflow-y:auto; padding:36px; position:relative; margin:auto;
 }
 .catalog-expand-panel h3{ font-size:22px; margin-bottom:8px; padding-right:30px; }
 .catalog-expand-panel > p:not(.eyebrow){ color: var(--ink-soft); margin-bottom:22px; }
-.catalog-expand-scroller{
-  margin:0 -36px 26px; padding:0 36px 6px; overflow-x:auto; scroll-snap-type: x proximity;
-  -webkit-overflow-scrolling:touch;
-}
 .catalog-expand-grid{
-  display:flex; gap:12px; width:max-content;
+  display:grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap:10px; margin-bottom:26px;
 }
 .catalog-expand-grid img{
-  width:200px; height:200px; object-fit:cover; border-radius:10px; cursor:pointer;
-  flex-shrink:0; scroll-snap-align:start;
+  width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:10px; cursor:pointer;
+  transition: transform .2s ease;
 }
+.catalog-expand-grid img:hover{ transform: scale(1.04); }
 .catalog-expand .modal-close{
   position:absolute; top:20px; right:20px; background:none; border:none;
   font-size:20px; line-height:1; cursor:pointer; color: var(--ink-soft);
@@ -285,12 +289,16 @@ section{ position:relative; }
 /* modal de orçamento */
 .quote-modal{
   position:fixed; inset:0; background: rgba(15,14,13,.75); z-index:220;
-  display:none; align-items:flex-start; justify-content:center; padding:60px 20px; overflow-y:auto;
+  display:none; align-items:center; justify-content:center; padding:24px; overflow:hidden;
 }
 .quote-modal.open{ display:flex; }
 .quote-modal-panel{
   background: var(--surface); border-radius: var(--radius); max-width:560px; width:100%;
-  padding:36px; position:relative; margin:auto;
+  max-height:calc(100vh - 48px); overflow-y:auto; padding:36px; position:relative; margin:auto;
+}
+@media (max-width:600px){
+  .quote-modal{ padding:0; }
+  .quote-modal-panel{ max-height:100vh; height:100%; border-radius:0; padding:28px 20px; }
 }
 .quote-modal .modal-close{
   position:absolute; top:18px; right:18px; background:none; border:none;
@@ -307,7 +315,7 @@ section{ position:relative; }
 .quote-modal input:focus, .quote-modal select:focus, .quote-modal textarea:focus{ outline:none; border-color: var(--accent); }
 
 .quote-item-picker{
-  display:flex; flex-direction:column; gap:8px; max-height:280px; overflow-y:auto;
+  display:flex; flex-direction:column; gap:8px; max-height:240px; overflow-y:auto;
   border:1px solid var(--line); border-radius: var(--radius); padding:8px;
 }
 .quote-pick-row{
@@ -472,7 +480,7 @@ section{ position:relative; }
   .burger{ display:block; }
   .header-actions .btn-primary.desktop-only{ display:none; }
   .catalog-grid{ grid-template-columns: 1fr 1fr; }
-  .catalog-expand-grid img{ width:150px; height:150px; }
+  .catalog-expand-grid{ grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
   .gallery-grid{ grid-template-columns: repeat(2,1fr); grid-auto-rows:140px; }
   .how-steps{ grid-template-columns: 1fr 1fr; }
   .footer-grid{ grid-template-columns: 1fr 1fr; }

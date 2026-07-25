@@ -167,24 +167,40 @@ same `.then()` as the content-array overrides) and toggles `element.style.displa
 `.how`, `.testimonials`, `.final-cta`, `#catalogGallery`, and `#catalogViewAllWrap` — the header,
 hero, and footer are not toggleable.
 
+Each `.config-toggle` checkbox is still a real `<input type="checkbox">` (so screen readers, keyboard
+`Tab`/`Space`, and the existing `el.checked` reads in `js/admin.js` all keep working unchanged) but
+`css/admin.css` restyles it into an iOS-style pill switch via `appearance:none` + a `::after` thumb
+that translates on `:checked` — no separate JS toggle-state or extra markup needed. The label text is
+wrapped in a `<span>` (`admin.html`) so flexbox can put it on the left and the switch on the right
+(`justify-content:space-between`) instead of the old inline-checkbox-then-text layout. File inputs
+(`itemFoto` in the shared item modal, `heroPhoto1`..`heroPhoto4`) are restyled the same way — the
+input itself is transparent/borderless and only its `::file-selector-button` (+ `-webkit-` fallback)
+is styled as a pill button matching the rest of the UI, replacing the OS-default "Choose file"
+button. Both are pure-CSS, no HTML structure changes beyond the toggle's `<span>` wrap.
+
 ## Hero images and placeholder photo volume
 
 `siteConfig/settings` also holds `hero1`..`hero4` (base64 data URLs, same `resizeImage()` pipeline
 as `produtos`/`galeria` photos) — the 4 images in the hero's `.hero-grid` (`#heroImg1`..`#heroImg4`
-in `index.html`). Admin uploads them via 4 file inputs in the "Configurações" block
-(`heroPhoto1`..`heroPhoto4` in `admin.html`); each `change` resizes and writes straight to
-`siteConfig/settings/hero{n}` like the section-visibility checkboxes do — no separate save step.
-`applySettings()` in `js/main.js` only overwrites a hero `<img src>` when the corresponding
-`hero{n}` key is present, so sites that haven't uploaded any keep the default picsum placeholders.
+in `index.html`). Admin manages them via `.hero-photo-row` rows (`admin.html`, one per photo, stacked
+vertically — `.hero-photo-list{ flex-direction:column }`), each with a thumbnail, a file input, and a
+"Remover" button. Uploading (`change` on `heroPhoto{n}`) resizes and writes straight to
+`siteConfig/settings/hero{n}`, no separate save step. "Remover" (`heroPhoto{n}Remove` in
+`js/admin.js`) goes through the shared confirm modal, then `arcDb.ref('siteConfig/settings/hero{n}').remove()`
+— after that, `applySettings()` in `js/main.js` has nothing to override for that slot, so the `<img>`
+just keeps whatever `src` is already hardcoded in `index.html` (the default picsum placeholder).
+`applySettings()` only ever *sets* a hero `<img src>` when the corresponding `hero{n}` key is
+present in the fetched settings — it never explicitly resets one, so "no key" and "default photo"
+are the same state by construction. `renderSettings()` shows a "Padrão" placeholder thumbnail
+(`.form-thumb-empty`) and hides the "Remover" button whenever a slot has no uploaded photo.
 
 Both `js/main.js` and `js/admin.js` build their placeholder `galeria` data (12 photos per category,
 `PLACEHOLDER_PHOTOS_PER_CATEGORY`) from a shared-in-spirit (duplicated per file, since they don't
 share a module system) `CATEGORY_SLUGS` map + a small generator function (`buildPlaceholderGaleria()`
 / `buildSeedGaleria()`) rather than 168 hand-written literal objects — if you add/rename a category,
 update `CATEGORY_SLUGS` in *both* files (they must stay in sync) rather than editing generated data
-directly. These are pure filler picsum photos for demoing the horizontally-scrollable "Ver fotos"
-strip and the tab-filtered portfolio grid; real sites should replace them with actual product photos
-via the admin panel.
+directly. These are pure filler picsum photos for demoing the "Ver fotos" grid and the tab-filtered
+portfolio grid; real sites should replace them with actual product photos via the admin panel.
 
 ## Lightbox navigation and the quote item picker
 
@@ -201,6 +217,13 @@ tab-filtered-out (hidden) photo. `.lightbox` is `z-index:240`, above `.catalog-e
 "photo opens behind the modal" bug; always keep the lightbox's z-index higher than anything that can
 open it.
 
+`#catalogExpandGrid` (the photos inside "Ver fotos") is a responsive CSS grid
+(`repeat(auto-fill, minmax(120px, 1fr))`), not a horizontal scroller — it used to be a flex row with
+`overflow-x:auto`, but that read as an ugly slider and hid most of a category's photos off-screen.
+The grid wraps as many photos as fit per row and lets `.catalog-expand-panel` (which already had
+`overflow-y:auto`) handle any overflow with a normal vertical scroll, so many photos are visible at
+once without deliberately scrolling sideways.
+
 The quote modal's item selector (`#quoteItemPicker`) replaced a `<select>` + qty input + "Adicionar"
 button + separate added-items list with a single scrollable list of every product (thumbnail + name
 + a `− N +` stepper each), state-driven by one `quoteQuantities` object (`{ [productName]: qty }`)
@@ -215,6 +238,24 @@ the submit button, for visitors who'd rather not wait for a callback. It builds 
 from the current `quoteQuantities` + the observações textarea and opens it in a new tab
 (`window.open`, not a same-tab navigation) — it does not submit the form or write to `orcamentos`,
 it's purely an alternate contact path.
+
+`.quote-modal` no longer scrolls the overlay itself (`overflow:hidden`, `align-items:center`) —
+only `.quote-modal-panel` scrolls (`max-height: calc(100vh - 48px)`, full-bleed `100vh` on mobile
+via a `max-width:600px` media query), so there is exactly one scroll container for the whole modal
+instead of the overlay and the panel both being scrollable at once (which read as a broken/janky
+double scroll). `#quoteItemPicker` still has its own bounded `max-height:240px` internal scroll for
+the product list specifically — that's intentional (keeps name/phone/observações/buttons always
+in view without the list pushing them off-screen), not a second competing scroll region, since it
+doesn't grow past that height and the panel scrolls around it as one unit.
+
+## Custom scrollbar styling
+
+`.scroll-thin` (in `css/style.css`, near the top with the other global utilities) is a small
+cross-browser thin-scrollbar utility (`scrollbar-width:thin` + `::-webkit-scrollbar` rules) using
+`var(--line)` normally and `var(--accent)` on hover, so it themes with light/dark mode. Apply it to
+any element that gets `overflow-y:auto`/`overflow-x:auto` on the public site — it's already on
+`.catalog-expand-panel`, `.quote-modal-panel`, and `#quoteItemPicker`. Default browser scrollbars
+look out of place against this design, so don't add a new scrollable container without it.
 
 ## Anchor scroll offset
 
