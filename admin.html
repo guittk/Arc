@@ -59,57 +59,80 @@
     <h1>Conteúdo do site</h1>
     <p>Gerencie tudo o que aparece no site da ARC Personalizados. Clique em Editar/Novo para abrir a janela de edição.</p>
 
+    <!-- CONFIGURAÇÕES -->
+    <div class="config-block">
+      <h3>Configurações</h3>
+      <p class="config-hint">Escolha quais seções aparecem no site. Cada alteração é salva automaticamente.</p>
+      <div class="config-toggle-list">
+        <label class="config-toggle"><input type="checkbox" id="settingCatalogo" checked> Seção "Catálogo"</label>
+        <label class="config-toggle"><input type="checkbox" id="settingPortfolio"> "Ver todos os trabalhos já entregues" (dentro do Catálogo) — escondido por padrão</label>
+        <label class="config-toggle"><input type="checkbox" id="settingComoFunciona" checked> Seção "Como funciona"</label>
+        <label class="config-toggle"><input type="checkbox" id="settingDepoimentos" checked> Seção "Depoimentos"</label>
+        <label class="config-toggle"><input type="checkbox" id="settingCtaFinal" checked> Seção final "Faça seu orçamento agora"</label>
+      </div>
+
+      <p class="config-hint" style="margin-top:24px;">Fotos do carrossel do Hero (as 4 imagens no topo do site).</p>
+      <div class="hero-photo-grid">
+        <div class="form-field">
+          <label for="heroPhoto1">Foto 1</label>
+          <input type="file" id="heroPhoto1" accept="image/*">
+          <div class="form-preview" id="heroPhoto1Preview"></div>
+        </div>
+        <div class="form-field">
+          <label for="heroPhoto2">Foto 2</label>
+          <input type="file" id="heroPhoto2" accept="image/*">
+          <div class="form-preview" id="heroPhoto2Preview"></div>
+        </div>
+        <div class="form-field">
+          <label for="heroPhoto3">Foto 3</label>
+          <input type="file" id="heroPhoto3" accept="image/*">
+          <div class="form-preview" id="heroPhoto3Preview"></div>
+        </div>
+        <div class="form-field">
+          <label for="heroPhoto4">Foto 4</label>
+          <input type="file" id="heroPhoto4" accept="image/*">
+          <div class="form-preview" id="heroPhoto4Preview"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- CATEGORIAS -->
     <div class="config-block">
-      <h3>Categorias da galeria</h3>
-      <p class="config-hint">Usadas para organizar e filtrar os trabalhos em "Galeria de trabalhos". Selecionáveis ao criar um item da galeria.</p>
+      <div class="config-block-head">
+        <h3>Categorias <span class="config-count" id="categoriasCount"></span></h3>
+        <button type="button" class="btn btn-outline" id="addCategoriaBtn">+ Nova categoria</button>
+      </div>
+      <p class="config-hint">Cada categoria vira um card no Catálogo do site e uma aba no Portfólio. Selecionáveis ao criar um produto ou uma foto extra.</p>
       <div class="config-list" id="categoriasList"></div>
-      <form id="categoriaForm" class="config-inline-form">
-        <input type="hidden" id="categoriaEditId">
-        <input type="text" id="categoriaLabel" placeholder="Nome da categoria (ex: Canecas)" required>
-        <button type="submit" class="btn btn-outline" id="categoriaSubmitBtn">Adicionar</button>
-        <button type="button" class="btn admin-btn-danger" id="categoriaCancelEdit" style="display:none;">Cancelar</button>
-      </form>
     </div>
 
-    <!-- O QUE FAZEMOS -->
+    <!-- CATÁLOGO: PRODUTOS -->
     <div class="config-block">
       <div class="config-block-head">
-        <h3>O que fazemos <span class="config-count" id="servicosCount"></span></h3>
-        <button type="button" class="btn btn-outline" id="addServicoBtn">+ Novo serviço</button>
-      </div>
-      <p class="config-hint">Cards de serviço mostrados na seção "O que fazemos" do site.</p>
-      <div class="config-list" id="servicosList"></div>
-    </div>
-
-    <!-- GALERIA -->
-    <div class="config-block">
-      <div class="config-block-head">
-        <h3>Galeria de trabalhos <span class="config-count" id="galeriaCount"></span></h3>
-        <button type="button" class="btn btn-outline" id="addGaleriaBtn">+ Adicionar trabalho</button>
-      </div>
-      <p class="config-hint">Fotos reais dos trabalhos realizados, exibidas no portfólio do site.</p>
-      <div class="config-list" id="galeriaList"></div>
-    </div>
-
-    <!-- PRODUTOS -->
-    <div class="config-block">
-      <div class="config-block-head">
-        <h3>Produtos em destaque <span class="config-count" id="produtosCount"></span></h3>
+        <h3>Catálogo — Produtos <span class="config-count" id="produtosCount"></span></h3>
         <button type="button" class="btn btn-outline" id="addProdutoBtn">+ Novo produto</button>
       </div>
-      <p class="config-hint">Itens do catálogo mostrados na seção "Produtos em destaque".</p>
+      <p class="config-hint">Cada produto pertence a uma categoria. O primeiro produto de cada categoria vira o card de destaque na seção "Catálogo" do site — os demais aparecem ao expandir a categoria.</p>
       <div class="config-list" id="produtosList"></div>
     </div>
 
-    <!-- DIFERENCIAIS -->
+    <!-- CATÁLOGO: GALERIA -->
     <div class="config-block">
       <div class="config-block-head">
-        <h3>Diferenciais <span class="config-count" id="diferenciaisCount"></span></h3>
-        <button type="button" class="btn btn-outline" id="addDiferencialBtn">+ Novo diferencial</button>
+        <h3>Catálogo — Fotos extras <span class="config-count" id="galeriaCount"></span></h3>
+        <button type="button" class="btn btn-outline" id="addGaleriaBtn">+ Adicionar foto</button>
       </div>
-      <p class="config-hint">Itens da seção "Por que a ARC" / "Diferenciais que fazem a diferença".</p>
-      <div class="config-list" id="diferenciaisList"></div>
+      <p class="config-hint">Fotos adicionais de trabalhos reais, organizadas por categoria — aparecem junto aos produtos quando o cliente expande uma categoria no site.</p>
+      <div class="config-list" id="galeriaList"></div>
+    </div>
+
+    <!-- PEDIDOS DE ORÇAMENTO -->
+    <div class="config-block">
+      <div class="config-block-head">
+        <h3>Pedidos de orçamento <span class="config-count" id="orcamentosCount"></span></h3>
+      </div>
+      <p class="config-hint">Pedidos enviados pelos clientes pelo formulário de orçamento do site.</p>
+      <div class="config-list" id="orcamentosList"></div>
     </div>
 
     <!-- DEPOIMENTOS -->
@@ -120,6 +143,14 @@
       </div>
       <p class="config-hint">Avaliações de clientes mostradas na seção "O que dizem nossos clientes".</p>
       <div class="config-list" id="depoimentosList"></div>
+    </div>
+
+    <!-- ZONA DE PERIGO -->
+    <div class="config-block config-danger-zone">
+      <h3>Zona de perigo</h3>
+      <p class="config-hint">Restaura as 14 categorias, produtos e fotos padrão do catálogo. Categorias, produtos e fotos que você criou ou editou manualmente serão substituídos pelos dados de fábrica — essa ação não pode ser desfeita. Depoimentos e pedidos de orçamento não são afetados.</p>
+      <button type="button" class="btn admin-btn-danger" id="resetCatalogoBtn">Restaurar catálogo padrão</button>
+      <p class="config-status" id="resetCatalogoStatus"></p>
     </div>
   </div>
 </section>
@@ -135,18 +166,12 @@
       <input type="hidden" id="itemEditId">
       <input type="hidden" id="itemContext">
 
-      <div class="form-row">
-        <div class="form-field" id="campoIcon" style="display:none;">
-          <label for="itemIcon">Ícone</label>
-          <select id="itemIcon"></select>
-        </div>
-        <div class="form-field">
-          <label id="itemTituloLabel" for="itemTitulo">Título</label>
-          <input type="text" id="itemTitulo" required placeholder="Ex: Gravação a Laser">
-        </div>
+      <div class="form-field">
+        <label id="itemTituloLabel" for="itemTitulo">Título</label>
+        <input type="text" id="itemTitulo" required placeholder="Ex: Caneca Personalizada">
       </div>
       <div class="form-field" id="campoCategoria" style="display:none;">
-        <label for="itemCategoria">Categoria (usada nos filtros da galeria)</label>
+        <label for="itemCategoria">Categoria</label>
         <select id="itemCategoria"></select>
       </div>
 
@@ -170,17 +195,39 @@
   </div>
 </div>
 
-<!-- MODAL: confirmar exclusão -->
+<!-- MODAL: criar/editar categoria -->
+<div class="modal-overlay" id="categoriaModalOverlay">
+  <div class="modal modal-small">
+    <div class="modal-head">
+      <h3 id="categoriaModalTitle">Nova categoria</h3>
+      <button type="button" class="modal-close" id="categoriaModalClose" aria-label="Fechar">✕</button>
+    </div>
+    <form id="categoriaForm">
+      <input type="hidden" id="categoriaEditId">
+      <div class="form-field">
+        <label for="categoriaLabel">Nome da categoria</label>
+        <input type="text" id="categoriaLabel" placeholder="Ex: Canecas Personalizadas" required>
+      </div>
+      <p class="config-status" id="categoriaStatus"></p>
+      <div style="display:flex;gap:12px;">
+        <button type="submit" class="btn btn-primary" id="categoriaSubmitBtn">Salvar</button>
+        <button type="button" class="btn btn-outline" id="categoriaModalCancel">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: confirmar ação destrutiva -->
 <div class="modal-overlay" id="confirmModalOverlay">
   <div class="modal modal-small">
     <div class="modal-head">
-      <h3>Confirmar exclusão</h3>
+      <h3 id="confirmModalTitle">Confirmar exclusão</h3>
       <button type="button" class="modal-close" id="confirmModalClose" aria-label="Fechar">✕</button>
     </div>
     <p id="confirmModalMessage"></p>
     <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:26px;">
       <button type="button" class="btn btn-outline" id="confirmModalCancel">Cancelar</button>
-      <button type="button" class="btn admin-btn-danger" id="confirmModalOk">Excluir</button>
+      <button type="button" class="btn admin-btn-danger" id="confirmModalOk">Confirmar</button>
     </div>
   </div>
 </div>

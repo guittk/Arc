@@ -13,89 +13,52 @@ const io = new IntersectionObserver((entries) => {
 }, { threshold: .15 });
 revealEls.forEach(el => io.observe(el));
 
-/* ---------- ICON SETS ---------- */
-const serviceIconPaths = {
-  laser: '<path d="M3 17l6-6M9 11l4-4 4 4-4 4-4-4z"/><path d="M19 5l2 2"/>',
-  mug: '<path d="M4 4h11v9a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V4z"/><path d="M15 8h2a3 3 0 0 1 0 6h-2"/>',
-  bottle: '<path d="M9 2h4v3l1.5 2v13a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1V7L9 5z"/><path d="M8 11h6"/>',
-  gift: '<rect x="3" y="9" width="16" height="11" rx="1"/><path d="M3 13h16"/><path d="M11 9v11"/><path d="M11 9C9 9 7 7.5 7 5.5A2.5 2.5 0 0 1 9.5 3C11 3 11 6 11 9z"/><path d="M11 9c2 0 4-1.5 4-3.5A2.5 2.5 0 0 0 12.5 3C11 3 11 6 11 9z"/>',
-  calendar: '<rect x="3" y="5" width="16" height="15" rx="2"/><path d="M3 10h16"/><path d="M7 3v4"/><path d="M15 3v4"/>',
-  card: '<rect x="2" y="6" width="18" height="12" rx="2"/><path d="M6 15h4"/><path d="M14 10h4"/><path d="M14 13h4"/>',
-  flyer: '<path d="M5 3h11l3 3v15H5z"/><path d="M16 3v3h3"/><path d="M8 12h8"/><path d="M8 16h8"/>',
-  pix: '<rect x="4" y="4" width="14" height="16" rx="2"/><path d="M11 8l3 3-3 3-3-3z"/>',
-  tag: '<path d="M11 3l8 8-8 8-8-8V3z"/><circle cx="7" cy="7" r="1"/>',
-  mousepad: '<rect x="3" y="6" width="16" height="12" rx="3"/><circle cx="14" cy="12" r="2"/>',
-  bag: '<path d="M5 8h12l1 12H4z"/><path d="M8 8V6a3 3 0 0 1 6 0v2"/>',
-  body: '<path d="M7 3h8l1 4-2 2v10H8V9L6 7z"/>',
-  shirt: '<path d="M7 3l-4 3 2 3 2-1v11h8V8l2 1 2-3-4-3-2 2h-2z"/>',
-  party: '<path d="M4 20l3-11 11 3-11 3z"/><path d="M15 4l1 3"/><path d="M19 8l3 1"/><path d="M13 3l2 1"/>'
-};
+/* ---------- DADOS PADRÃO (usados até o conteúdo do Firebase carregar) ---------- */
+let categorias = [
+  { label: 'Gravação a Laser' }, { label: 'Mouse Pad' }, { label: 'Mochila Saco Infantil' },
+  { label: 'Bodies e Toalhinhas' }, { label: 'Camisetas' }, { label: 'Kit Festa na Mesa' },
+  { label: 'Canecas Personalizadas' }, { label: 'Garrafas Personalizadas' }, { label: 'Lembrancinhas' },
+  { label: 'Mini Calendários' }, { label: 'Cartões de Visita' }, { label: 'Panfletos' },
+  { label: 'Placas Pix' }, { label: 'Tags' },
+];
 
-const diffIconPaths = {
-  flash: '<path d="M13 2 3 14h7l-1 8 11-14h-7z"/>',
-  star: '<path d="M12 2l2.9 6.3 6.9.9-5 4.9 1.2 6.9L12 17.8 5.9 21l1.2-6.9-5-4.9 6.9-.9z"/>',
-  shield: '<path d="M12 2a5 5 0 0 1 5 5v3a5 5 0 0 1-10 0V7a5 5 0 0 1 5-5z"/><path d="M5 21c0-3.9 3.1-7 7-7s7 3.1 7 7"/>',
-  grid: '<path d="M4 4h16v16H4z"/><path d="M4 9h16"/><path d="M9 4v16"/>',
-  list: '<path d="M3 7h18M3 12h18M3 17h18"/>',
-  chat: '<path d="M21 11.5a8.4 8.4 0 0 1-8.4 8.4 8.3 8.3 0 0 1-3.8-.9L3 21l1.9-5.8a8.3 8.3 0 0 1-.9-3.8A8.4 8.4 0 0 1 12.6 3a8.4 8.4 0 0 1 8.4 8.5z"/>',
-  generic: '<circle cx="12" cy="12" r="9"/>'
+/* slugs usados só para gerar seeds de imagem placeholder variadas por categoria */
+const CATEGORY_SLUGS = {
+  'Gravação a Laser': 'laser', 'Mouse Pad': 'mousepad', 'Mochila Saco Infantil': 'mochila',
+  'Bodies e Toalhinhas': 'body', 'Camisetas': 'camiseta', 'Kit Festa na Mesa': 'festa',
+  'Canecas Personalizadas': 'caneca', 'Garrafas Personalizadas': 'garrafa', 'Lembrancinhas': 'lembranca',
+  'Mini Calendários': 'calendario', 'Cartões de Visita': 'cartao', 'Panfletos': 'panfleto',
+  'Placas Pix': 'pix', 'Tags': 'tag',
 };
+const PLACEHOLDER_PHOTOS_PER_CATEGORY = 12;
 
-function iconSVG(paths, name){
-  return `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${paths[name] || paths.generic || Object.values(paths)[0]}</svg>`;
+function buildPlaceholderGaleria(){
+  const arr = [];
+  Object.entries(CATEGORY_SLUGS).forEach(([categoria, slug]) => {
+    for (let n = 1; n <= PLACEHOLDER_PHOTOS_PER_CATEGORY; n++){
+      arr.push({ categoria, label: `${categoria} ${n}`, foto: `https://picsum.photos/seed/gal-${slug}${n}/900/900` });
+    }
+  });
+  return arr;
 }
 
-/* ---------- DADOS PADRÃO (usados até o conteúdo do Firebase carregar) ---------- */
-let services = [
-  { icon: 'laser', titulo: 'Gravação a Laser', texto: 'Copos térmicos e garrafas com gravação precisa e duradoura.' },
-  { icon: 'mug', titulo: 'Canecas Personalizadas', texto: 'Fotos, frases e logos com impressão de alta qualidade.' },
-  { icon: 'bottle', titulo: 'Garrafas Personalizadas', texto: 'Ideal para presentes corporativos e datas especiais.' },
-  { icon: 'gift', titulo: 'Lembrancinhas', texto: 'Para casamentos, chás e aniversários com carinho no detalhe.' },
-  { icon: 'calendar', titulo: 'Mini Calendários', texto: 'Brindes de fim de ano personalizados com a sua marca.' },
-  { icon: 'card', titulo: 'Cartões de Visita', texto: 'Design profissional que representa o seu negócio.' },
-  { icon: 'flyer', titulo: 'Panfletos', texto: 'Material impresso para divulgação com arte exclusiva.' },
-  { icon: 'pix', titulo: 'Placas Pix', texto: 'Placas personalizadas para facilitar o pagamento no seu ponto.' },
-  { icon: 'tag', titulo: 'Tags', texto: 'Etiquetas personalizadas para produtos e embalagens.' },
-  { icon: 'mousepad', titulo: 'Mouse Pad', texto: 'Personalize com fotos, logos ou artes exclusivas.' },
-  { icon: 'bag', titulo: 'Mochila Saco Infantil', texto: 'Bolsas divertidas e personalizadas para a criançada.' },
-  { icon: 'body', titulo: 'Bodies e Toalhinhas', texto: 'Itens fofos e personalizados para o bebê.' },
-  { icon: 'shirt', titulo: 'Camisetas', texto: 'Estampas personalizadas para eventos, times e empresas.' },
-  { icon: 'party', titulo: 'Kit Festa na Mesa', texto: 'Conjunto completo para decorar a mesa da sua festa.' },
-];
-
-let galeria = [
-  { categoria:'Canecas', label:'Caneca "Melhor mãe"', foto:'https://picsum.photos/seed/gal-caneca1/900/900', tall:true },
-  { categoria:'Garrafas', label:'Garrafa corporativa', foto:'https://picsum.photos/seed/gal-garrafa1/900/900' },
-  { categoria:'Camisetas', label:'Camiseta de time', foto:'https://picsum.photos/seed/gal-camiseta1/900/900' },
-  { categoria:'Papelaria', label:'Cartão de visita', foto:'https://picsum.photos/seed/gal-cartao1/900/900' },
-  { categoria:'Festas', label:'Kit festa na mesa', foto:'https://picsum.photos/seed/gal-festa1/900/900', tall:true },
-  { categoria:'Canecas', label:'Caneca casal', foto:'https://picsum.photos/seed/gal-caneca2/900/900' },
-  { categoria:'Garrafas', label:'Squeeze gravado', foto:'https://picsum.photos/seed/gal-garrafa2/900/900' },
-  { categoria:'Papelaria', label:'Mini calendário', foto:'https://picsum.photos/seed/gal-calendario1/900/900' },
-  { categoria:'Bebês', label:'Body personalizado', foto:'https://picsum.photos/seed/gal-body1/900/900' },
-  { categoria:'Camisetas', label:'Camiseta divertida', foto:'https://picsum.photos/seed/gal-camiseta2/900/900', tall:true },
-  { categoria:'Festas', label:'Tags de lembrancinha', foto:'https://picsum.photos/seed/gal-tag1/900/900' },
-  { categoria:'Bebês', label:'Toalhinha de boca', foto:'https://picsum.photos/seed/gal-toalha1/900/900' },
-];
+let galeria = buildPlaceholderGaleria();
 
 let produtos = [
-  { nome:'Copo Térmico Gravado a Laser', texto:'Gravação precisa e resistente, ideal para uso diário ou presente.', foto:'https://picsum.photos/seed/prod-copo/500/380' },
-  { nome:'Caneca Personalizada', texto:'Estampe fotos, frases ou logotipo com acabamento premium.', foto:'https://picsum.photos/seed/prod-caneca/500/380' },
-  { nome:'Garrafa Personalizada', texto:'Perfeita para brindes corporativos e presentes especiais.', foto:'https://picsum.photos/seed/prod-garrafa/500/380' },
-  { nome:'Camiseta Personalizada', texto:'Estampas exclusivas para eventos, times e uso pessoal.', foto:'https://picsum.photos/seed/prod-camiseta/500/380' },
-  { nome:'Kit Festa na Mesa', texto:'Conjunto completo para decorar a mesa de qualquer comemoração.', foto:'https://picsum.photos/seed/prod-kitfesta/500/380' },
-  { nome:'Cartão de Visita', texto:'Design profissional que causa a primeira boa impressão.', foto:'https://picsum.photos/seed/prod-cartao/500/380' },
-  { nome:'Placa Pix', texto:'Praticidade e identidade visual para o seu ponto de venda.', foto:'https://picsum.photos/seed/prod-pix/500/380' },
-  { nome:'Mouse Pad Personalizado', texto:'Traga sua marca ou arte favorita para o dia a dia.', foto:'https://picsum.photos/seed/prod-mousepad/500/380' },
-];
-
-let diferenciais = [
-  { icon:'flash', titulo:'Atendimento rápido', texto:'Resposta ágil pelo WhatsApp, sem enrolação.' },
-  { icon:'star', titulo:'Alta qualidade', texto:'Materiais e acabamento pensados para durar.' },
-  { icon:'shield', titulo:'Personalização exclusiva', texto:'Cada peça é feita para o seu pedido, do seu jeito.' },
-  { icon:'grid', titulo:'Excelente acabamento', texto:'Atenção aos detalhes em cada etapa da produção.' },
-  { icon:'list', titulo:'Variedade de produtos', texto:'De canecas a papelaria — tudo em um só lugar.' },
-  { icon:'chat', titulo:'Orçamento sem compromisso', texto:'Você pergunta, a gente responde — sem pressão.' },
+  { nome:'Copo Térmico Gravado a Laser', texto:'Gravação precisa e resistente, ideal para uso diário ou presente.', foto:'https://picsum.photos/seed/prod-copo/500/380', categoria:'Gravação a Laser' },
+  { nome:'Mouse Pad Personalizado', texto:'Traga sua marca ou arte favorita para o dia a dia.', foto:'https://picsum.photos/seed/prod-mousepad/500/380', categoria:'Mouse Pad' },
+  { nome:'Mochila Saco Infantil', texto:'Bolsas divertidas e personalizadas para a criançada.', foto:'https://picsum.photos/seed/prod-mochila/500/380', categoria:'Mochila Saco Infantil' },
+  { nome:'Bodies e Toalhinhas', texto:'Itens fofos e personalizados para o bebê.', foto:'https://picsum.photos/seed/prod-body/500/380', categoria:'Bodies e Toalhinhas' },
+  { nome:'Camiseta Personalizada', texto:'Estampas exclusivas para eventos, times e uso pessoal.', foto:'https://picsum.photos/seed/prod-camiseta/500/380', categoria:'Camisetas' },
+  { nome:'Kit Festa na Mesa', texto:'Conjunto completo para decorar a mesa de qualquer comemoração.', foto:'https://picsum.photos/seed/prod-kitfesta/500/380', categoria:'Kit Festa na Mesa' },
+  { nome:'Caneca Personalizada', texto:'Estampe fotos, frases ou logotipo com acabamento premium.', foto:'https://picsum.photos/seed/prod-caneca/500/380', categoria:'Canecas Personalizadas' },
+  { nome:'Garrafa Personalizada', texto:'Perfeita para brindes corporativos e presentes especiais.', foto:'https://picsum.photos/seed/prod-garrafa/500/380', categoria:'Garrafas Personalizadas' },
+  { nome:'Lembrancinha Personalizada', texto:'Para casamentos, chás e aniversários com carinho no detalhe.', foto:'https://picsum.photos/seed/prod-lembranca/500/380', categoria:'Lembrancinhas' },
+  { nome:'Mini Calendário Personalizado', texto:'Brindes de fim de ano personalizados com a sua marca.', foto:'https://picsum.photos/seed/prod-calendario/500/380', categoria:'Mini Calendários' },
+  { nome:'Cartão de Visita', texto:'Design profissional que causa a primeira boa impressão.', foto:'https://picsum.photos/seed/prod-cartao/500/380', categoria:'Cartões de Visita' },
+  { nome:'Panfleto Personalizado', texto:'Material impresso para divulgação com arte exclusiva.', foto:'https://picsum.photos/seed/prod-panfleto/500/380', categoria:'Panfletos' },
+  { nome:'Placa Pix', texto:'Praticidade e identidade visual para o seu ponto de venda.', foto:'https://picsum.photos/seed/prod-pix/500/380', categoria:'Placas Pix' },
+  { nome:'Tags Personalizadas', texto:'Etiquetas personalizadas para produtos e embalagens.', foto:'https://picsum.photos/seed/prod-tag/500/380', categoria:'Tags' },
 ];
 
 let depoimentos = [
@@ -103,39 +66,105 @@ let depoimentos = [
   { nome:'Rodrigo A.', texto:'Pedi garrafas para o aniversário da empresa e todo mundo elogiou o acabamento da gravação a laser.' },
 ];
 
-/* ---------- RENDER: SERVIÇOS ---------- */
-const servicesGrid = document.getElementById('servicesGrid');
-function renderServices(){
-  servicesGrid.innerHTML = services.map(s => `
-    <div class="service-card">
-      <div class="service-icon">${iconSVG(serviceIconPaths, s.icon)}</div>
-      <h3>${s.titulo}</h3>
-      <p>${s.texto}</p>
-    </div>
-  `).join('');
+/* ---------- RENDER: CATÁLOGO (Serviços + Galeria + Produtos unificados) ---------- */
+const catalogGrid = document.getElementById('catalogGrid');
+
+function representativeFor(catLabel){
+  const prod = produtos.find(p => p.categoria === catLabel);
+  if (prod) return { titulo: prod.nome, texto: prod.texto, foto: prod.foto };
+  const gal = galeria.find(g => g.categoria === catLabel);
+  if (gal) return { titulo: gal.label, texto: '', foto: gal.foto };
+  return null;
 }
 
-/* ---------- RENDER: GALERIA ---------- */
+function renderCatalog(){
+  const cards = categorias
+    .map(c => ({ cat: c.label, rep: representativeFor(c.label) }))
+    .filter(x => x.rep);
+
+  catalogGrid.innerHTML = cards.map(({ cat, rep }) => `
+    <div class="catalog-card reveal is-visible" data-cat="${cat}">
+      <div class="catalog-photo"><img loading="lazy" src="${rep.foto}" alt="${rep.titulo}"></div>
+      <div class="catalog-body">
+        <h3>${rep.titulo}</h3>
+        <p>${rep.texto || `Confira nossos trabalhos de ${cat}.`}</p>
+        <div class="catalog-card-actions">
+          <button type="button" class="btn btn-primary btn-sm" data-fotos-cat="${cat}">Ver fotos</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  attachCatalogHandlers();
+}
+
+function attachCatalogHandlers(){
+  catalogGrid.querySelectorAll('[data-fotos-cat]').forEach(btn => {
+    btn.addEventListener('click', () => openCatalogExpand(btn.dataset.fotosCat));
+  });
+}
+
+/* ---------- EXPANSÃO DA CATEGORIA: fotos reais + orçamento embutido ---------- */
+const catalogExpand = document.getElementById('catalogExpand');
+const catalogExpandTitle = document.getElementById('catalogExpandTitle');
+const catalogExpandText = document.getElementById('catalogExpandText');
+const catalogExpandGrid = document.getElementById('catalogExpandGrid');
+const catalogExpandOrcamentoBtn = document.getElementById('catalogExpandOrcamentoBtn');
+let currentExpandCat = null;
+
+function openCatalogExpand(cat){
+  currentExpandCat = cat;
+  const imgs = catalogImages().filter(i => i.categoria === cat);
+  catalogExpandTitle.textContent = cat;
+  catalogExpandText.textContent = `Fotos reais de trabalhos em ${cat} — confira o acabamento antes de pedir seu orçamento.`;
+  catalogExpandGrid.innerHTML = imgs.map(i => `<img loading="lazy" src="${i.foto}" alt="${i.label}">`).join('') || '<p>Em breve, novas fotos por aqui.</p>';
+  catalogExpandGrid.querySelectorAll('img').forEach((img, idx) => {
+    img.addEventListener('click', () => openLightbox(imgs, idx));
+  });
+  catalogExpand.classList.add('open');
+}
+function closeCatalogExpand(){ catalogExpand.classList.remove('open'); currentExpandCat = null; }
+document.getElementById('catalogExpandClose').addEventListener('click', closeCatalogExpand);
+catalogExpand.addEventListener('click', (e) => { if (e.target === catalogExpand) closeCatalogExpand(); });
+catalogExpandOrcamentoBtn.addEventListener('click', () => {
+  const cat = currentExpandCat;
+  closeCatalogExpand();
+  openQuoteModal(cat);
+});
+
+/* "ver todos os trabalhos": link secundário para o portfólio completo */
+document.getElementById('catalogViewAllBtn').addEventListener('click', () => {
+  document.getElementById('catalogGallery').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+/* ---------- RENDER: GALERIA "VER MAIS" (produtos + fotos extras, com filtro por categoria) ---------- */
 const galleryTabs = document.getElementById('galleryTabs');
 const galleryGrid = document.getElementById('galleryGrid');
 let currentGalleryFilter = 'Todos';
 
+function catalogImages(){
+  const prodImgs = produtos.map(p => ({ categoria: p.categoria || 'Geral', label: p.nome, foto: p.foto }));
+  const galImgs = galeria.map(g => ({ categoria: g.categoria || 'Geral', label: g.label, foto: g.foto }));
+  return [...prodImgs, ...galImgs];
+}
+
 function renderGalleryTabs(){
-  const categories = ['Todos', ...Array.from(new Set(galeria.map(g => g.categoria)))];
-  if (!categories.includes(currentGalleryFilter)) currentGalleryFilter = 'Todos';
-  galleryTabs.innerHTML = categories.map(c => `<button class="tab-btn ${c === currentGalleryFilter ? 'active' : ''}" data-cat="${c}">${c}</button>`).join('');
+  const cats = ['Todos', ...Array.from(new Set(catalogImages().map(i => i.categoria)))];
+  if (!cats.includes(currentGalleryFilter)) currentGalleryFilter = 'Todos';
+  galleryTabs.innerHTML = cats.map(c => `<button class="tab-btn ${c === currentGalleryFilter ? 'active' : ''}" data-cat="${c}">${c}</button>`).join('');
 }
 
 function renderGalleryGrid(){
-  galleryGrid.innerHTML = galeria.map(g => `
-    <div class="gallery-item ${g.tall ? 'tall' : ''} ${(currentGalleryFilter !== 'Todos' && currentGalleryFilter !== g.categoria) ? 'hidden' : ''}" data-cat="${g.categoria}" data-full="${g.foto}" data-label="${g.label}">
-      <img loading="lazy" src="${g.foto}" alt="${g.label}">
+  const allImgs = catalogImages();
+  galleryGrid.innerHTML = allImgs.map(i => `
+    <div class="gallery-item ${(currentGalleryFilter !== 'Todos' && currentGalleryFilter !== i.categoria) ? 'hidden' : ''}" data-cat="${i.categoria}">
+      <img loading="lazy" src="${i.foto}" alt="${i.label}">
     </div>
   `).join('');
-  attachLightboxHandlers();
+  attachLightboxHandlers(allImgs);
 }
 
-function renderGallery(){
+function renderCatalogGallery(){
   renderGalleryTabs();
   renderGalleryGrid();
 }
@@ -144,52 +173,151 @@ galleryTabs.addEventListener('click', (e) => {
   const btn = e.target.closest('.tab-btn');
   if (!btn) return;
   currentGalleryFilter = btn.dataset.cat;
-  renderGallery();
+  renderCatalogGallery();
 });
 
-/* LIGHTBOX */
+/* LIGHTBOX (com navegação para as fotos ao lado) */
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightboxImg');
-function attachLightboxHandlers(){
-  galleryGrid.querySelectorAll('.gallery-item').forEach(item => {
-    item.addEventListener('click', () => {
-      lightboxImg.src = item.dataset.full;
-      lightboxImg.alt = item.dataset.label;
-      lightbox.classList.add('open');
-    });
+let lightboxImages = [];
+let lightboxIndex = 0;
+
+function updateLightboxImage(){
+  const img = lightboxImages[lightboxIndex];
+  if (!img) return;
+  lightboxImg.src = img.foto;
+  lightboxImg.alt = img.label;
+}
+function openLightbox(images, index){
+  lightboxImages = images;
+  lightboxIndex = index;
+  updateLightboxImage();
+  lightbox.classList.add('open');
+}
+function closeLightbox(){ lightbox.classList.remove('open'); }
+function lightboxPrev(){ lightboxIndex = (lightboxIndex - 1 + lightboxImages.length) % lightboxImages.length; updateLightboxImage(); }
+function lightboxNext(){ lightboxIndex = (lightboxIndex + 1) % lightboxImages.length; updateLightboxImage(); }
+
+function attachLightboxHandlers(allImgs){
+  const items = [...galleryGrid.querySelectorAll('.gallery-item')];
+  const visibleImgs = allImgs.filter((_, i) => !items[i].classList.contains('hidden'));
+  let visIdx = 0;
+  items.forEach((item) => {
+    if (item.classList.contains('hidden')) return;
+    const idx = visIdx++;
+    item.addEventListener('click', () => openLightbox(visibleImgs, idx));
   });
 }
-document.getElementById('lightboxClose').addEventListener('click', () => lightbox.classList.remove('open'));
-lightbox.addEventListener('click', (e) => { if (e.target === lightbox) lightbox.classList.remove('open'); });
+document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+document.getElementById('lightboxPrev').addEventListener('click', (e) => { e.stopPropagation(); lightboxPrev(); });
+document.getElementById('lightboxNext').addEventListener('click', (e) => { e.stopPropagation(); lightboxNext(); });
+lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+document.addEventListener('keydown', (e) => {
+  if (!lightbox.classList.contains('open')) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft') lightboxPrev();
+  if (e.key === 'ArrowRight') lightboxNext();
+});
 
-/* ---------- RENDER: PRODUTOS ---------- */
-const productsGrid = document.getElementById('productsGrid');
-function renderProducts(){
-  productsGrid.innerHTML = produtos.map(p => {
-    const msg = encodeURIComponent(`Olá! Quero solicitar um orçamento para: ${p.nome}`);
+/* ---------- MODAL DE ORÇAMENTO ---------- */
+const quoteModal = document.getElementById('quoteModal');
+const quoteFormWrap = document.getElementById('quoteFormWrap');
+const quoteForm = document.getElementById('quoteForm');
+const quoteNome = document.getElementById('quoteNome');
+const quoteTelefone = document.getElementById('quoteTelefone');
+const quoteItemPicker = document.getElementById('quoteItemPicker');
+const quoteObs = document.getElementById('quoteObs');
+const quoteStatus = document.getElementById('quoteStatus');
+const quoteSuccess = document.getElementById('quoteSuccess');
+
+let quoteQuantities = {};
+
+function renderQuoteItemPicker(){
+  quoteItemPicker.innerHTML = produtos.map(p => {
+    const qty = quoteQuantities[p.nome] || 0;
     return `
-    <div class="product-card">
-      <div class="product-photo"><img loading="lazy" src="${p.foto}" alt="${p.nome}"></div>
-      <div class="product-body">
-        <h3>${p.nome}</h3>
-        <p>${p.texto}</p>
-        <a class="btn btn-primary btn-sm" href="https://wa.me/5515998402182?text=${msg}" target="_blank" rel="noopener">Solicitar Orçamento</a>
+    <div class="quote-pick-row ${qty > 0 ? 'selected' : ''}" data-nome="${p.nome}">
+      <div class="quote-pick-photo"><img src="${p.foto}" alt="${p.nome}" loading="lazy"></div>
+      <span class="quote-pick-name">${p.nome}</span>
+      <div class="quote-pick-qty">
+        <button type="button" class="qty-btn" data-action="dec" data-nome="${p.nome}">−</button>
+        <span class="qty-value">${qty}</span>
+        <button type="button" class="qty-btn" data-action="inc" data-nome="${p.nome}">+</button>
       </div>
     </div>`;
   }).join('');
 }
 
-/* ---------- RENDER: DIFERENCIAIS ---------- */
-const diffGrid = document.getElementById('diffGrid');
-function renderDiffs(){
-  diffGrid.innerHTML = diferenciais.map(d => `
-    <div class="diff-item">
-      ${iconSVG(diffIconPaths, d.icon)}
-      <h3>${d.titulo}</h3>
-      <p>${d.texto}</p>
-    </div>
-  `).join('');
+quoteItemPicker.addEventListener('click', (e) => {
+  const btn = e.target.closest('.qty-btn');
+  if (!btn) return;
+  const nome = btn.dataset.nome;
+  const current = quoteQuantities[nome] || 0;
+  if (btn.dataset.action === 'inc'){
+    quoteQuantities[nome] = current + 1;
+  } else {
+    const next = current - 1;
+    if (next > 0) quoteQuantities[nome] = next;
+    else delete quoteQuantities[nome];
+  }
+  renderQuoteItemPicker();
+});
+
+function openQuoteModal(cat){
+  quoteQuantities = {};
+  if (cat){
+    const rep = representativeFor(cat);
+    if (rep) quoteQuantities[rep.titulo] = 1;
+  }
+  renderQuoteItemPicker();
+  quoteForm.reset();
+  quoteStatus.textContent = '';
+  quoteFormWrap.style.display = '';
+  quoteSuccess.style.display = 'none';
+  quoteModal.classList.add('open');
 }
+function closeQuoteModal(){ quoteModal.classList.remove('open'); }
+document.getElementById('quoteModalClose').addEventListener('click', closeQuoteModal);
+document.getElementById('quoteSuccessClose').addEventListener('click', closeQuoteModal);
+quoteModal.addEventListener('click', (e) => { if (e.target === quoteModal) closeQuoteModal(); });
+
+document.getElementById('quoteWhatsappBtn').addEventListener('click', (e) => {
+  e.preventDefault();
+  const itens = Object.entries(quoteQuantities).map(([nome, qtd]) => `${qtd}x ${nome}`).join(', ');
+  let msg = 'Olá! Quero solicitar um orçamento.';
+  if (itens) msg += ` Itens: ${itens}.`;
+  if (quoteObs.value.trim()) msg += ` Observações: ${quoteObs.value.trim()}.`;
+  window.open(`https://wa.me/5515998402182?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+});
+
+quoteForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const itens = Object.entries(quoteQuantities).map(([nome, quantidade]) => ({ nome, quantidade }));
+  if (itens.length === 0){
+    quoteStatus.textContent = 'Escolha ao menos um item ao pedido.';
+    return;
+  }
+  if (typeof arcDb === 'undefined'){
+    quoteStatus.textContent = 'Não foi possível enviar agora. Tente novamente em instantes.';
+    return;
+  }
+  const pedido = {
+    nome: quoteNome.value.trim(),
+    telefone: quoteTelefone.value.trim(),
+    itens,
+    observacoes: quoteObs.value.trim(),
+    status: 'novo',
+    criadoEm: Date.now(),
+  };
+  quoteStatus.textContent = 'Enviando...';
+  arcDb.ref('orcamentos').push().set(pedido).then(() => {
+    quoteFormWrap.style.display = 'none';
+    quoteSuccess.style.display = '';
+  }).catch((err) => {
+    console.error('Erro ao enviar orçamento:', err);
+    quoteStatus.textContent = 'Erro ao enviar. Tente novamente.';
+  });
+});
 
 /* ---------- RENDER: DEPOIMENTOS ---------- */
 const testGrid = document.getElementById('testGrid');
@@ -203,36 +331,49 @@ function renderTestimonials(){
   `).join('') + `<div class="test-card empty">Seu depoimento pode aparecer aqui — envie sua avaliação depois de receber seu pedido!</div>`;
 }
 
+/* ---------- CONFIGURAÇÕES: esconder/mostrar seções ---------- */
+function applySettings(settings){
+  const s = settings || {};
+  const sectionMap = {
+    catalogo: document.getElementById('catalogo'),
+    comoFunciona: document.querySelector('.how'),
+    depoimentos: document.querySelector('.testimonials'),
+    ctaFinal: document.querySelector('.final-cta'),
+  };
+  Object.entries(sectionMap).forEach(([key, el]) => {
+    if (el) el.style.display = s[key] === false ? 'none' : '';
+  });
+  const portfolioVisible = s.portfolio === true;
+  const catalogGalleryEl = document.getElementById('catalogGallery');
+  const viewAllWrap = document.getElementById('catalogViewAllWrap');
+  if (catalogGalleryEl) catalogGalleryEl.style.display = portfolioVisible ? '' : 'none';
+  if (viewAllWrap) viewAllWrap.style.display = portfolioVisible ? '' : 'none';
+
+  [1, 2, 3, 4].forEach((n) => {
+    const url = s[`hero${n}`];
+    const img = document.getElementById(`heroImg${n}`);
+    if (img && url) img.src = url;
+  });
+}
+
 /* ---------- RENDER INICIAL (dados padrão) ---------- */
-renderServices();
-renderGallery();
-renderProducts();
-renderDiffs();
+renderCatalog();
+renderCatalogGallery();
 renderTestimonials();
 
 /* ---------- CARREGA CONTEÚDO REAL DO FIREBASE (se configurado) ---------- */
 if (typeof arcDb !== 'undefined'){
   arcDb.ref('siteConfig').once('value').then((snap) => {
     const data = snap.val() || {};
-    if (data.servicos){
-      services = Object.values(data.servicos);
-      renderServices();
-    }
-    if (data.galeria){
-      galeria = Object.values(data.galeria);
-      renderGallery();
-    }
-    if (data.produtos){
-      produtos = Object.values(data.produtos);
-      renderProducts();
-    }
-    if (data.diferenciais){
-      diferenciais = Object.values(data.diferenciais);
-      renderDiffs();
-    }
+    let catalogDirty = false;
+    if (data.categorias){ categorias = Object.values(data.categorias); catalogDirty = true; }
+    if (data.galeria){ galeria = Object.values(data.galeria); catalogDirty = true; }
+    if (data.produtos){ produtos = Object.values(data.produtos); catalogDirty = true; }
+    if (catalogDirty){ renderCatalog(); renderCatalogGallery(); }
     if (data.depoimentos){
       depoimentos = Object.values(data.depoimentos);
       renderTestimonials();
     }
+    applySettings(data.settings);
   }).catch((err) => console.error('Erro ao carregar conteúdo do Firebase:', err));
 }
