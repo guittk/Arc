@@ -374,7 +374,7 @@ const CATEGORY_SLUGS = {
   'Mini Calendários': 'calendario', 'Cartões de Visita': 'cartao', 'Panfletos': 'panfleto',
   'Placas Pix': 'pix', 'Tags': 'tag',
 };
-const PLACEHOLDER_PHOTOS_PER_CATEGORY = 12;
+const PLACEHOLDER_PHOTOS_PER_CATEGORY = 4;
 
 function buildSeedGaleria(){
   const seed = {};

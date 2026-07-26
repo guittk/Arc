@@ -167,6 +167,16 @@ same `.then()` as the content-array overrides) and toggles `element.style.displa
 `.how`, `.testimonials`, `.final-cta`, `#catalogGallery`, and `#catalogViewAllWrap` — the header,
 hero, and footer are not toggleable.
 
+`#catalogGallery`'s children (and `#catalogViewAllWrap` itself) intentionally do **not** carry the
+`.reveal` scroll-fade-in class that most sections use. `revealEls.forEach(el => io.observe(el))` runs
+synchronously at page load, before the Firebase fetch resolves — at that point these elements are
+still `display:none` (their default hidden state), so the IntersectionObserver registers them with a
+zero-size box and never reliably re-fires once `applySettings()` flips them visible later. The
+practical symptom was `.reveal`'s `opacity:0` sticking forever: the section still reserved its full
+layout height (opacity doesn't collapse a box) but rendered nothing, i.e. "a big empty gap" once
+portfolio was turned on. Any other element that starts `display:none` and gets shown later via JS
+(rather than by scrolling into view) should skip `.reveal` for the same reason.
+
 Each `.config-toggle` checkbox is still a real `<input type="checkbox">` (so screen readers, keyboard
 `Tab`/`Space`, and the existing `el.checked` reads in `js/admin.js` all keep working unchanged) but
 `css/admin.css` restyles it into an iOS-style pill switch via `appearance:none` + a `::after` thumb
@@ -194,7 +204,7 @@ present in the fetched settings — it never explicitly resets one, so "no key" 
 are the same state by construction. `renderSettings()` shows a "Padrão" placeholder thumbnail
 (`.form-thumb-empty`) and hides the "Remover" button whenever a slot has no uploaded photo.
 
-Both `js/main.js` and `js/admin.js` build their placeholder `galeria` data (12 photos per category,
+Both `js/main.js` and `js/admin.js` build their placeholder `galeria` data (4 photos per category,
 `PLACEHOLDER_PHOTOS_PER_CATEGORY`) from a shared-in-spirit (duplicated per file, since they don't
 share a module system) `CATEGORY_SLUGS` map + a small generator function (`buildPlaceholderGaleria()`
 / `buildSeedGaleria()`) rather than 168 hand-written literal objects — if you add/rename a category,
