@@ -108,34 +108,14 @@
       </div>
     </div>
 
-    <!-- CATEGORIAS -->
+    <!-- CATÁLOGO (unificado) -->
     <div class="config-block">
       <div class="config-block-head">
-        <h3>Categorias <span class="config-count" id="categoriasCount"></span></h3>
+        <h3>Catálogo <span class="config-count" id="catalogoCount"></span></h3>
         <button type="button" class="btn btn-outline" id="addCategoriaBtn">+ Nova categoria</button>
       </div>
-      <p class="config-hint">Cada categoria vira um card no Catálogo do site e uma aba no Portfólio. Selecionáveis ao criar um produto ou uma foto extra.</p>
+      <p class="config-hint">Cada categoria vira um card no site. Configure nome, produto, descrição e as fotos de cada uma — clique em uma foto para definir a capa do card.</p>
       <div class="config-list" id="categoriasList"></div>
-    </div>
-
-    <!-- CATÁLOGO: PRODUTOS -->
-    <div class="config-block">
-      <div class="config-block-head">
-        <h3>Catálogo — Produtos <span class="config-count" id="produtosCount"></span></h3>
-        <button type="button" class="btn btn-outline" id="addProdutoBtn">+ Novo produto</button>
-      </div>
-      <p class="config-hint">Cada produto pertence a uma categoria. O primeiro produto de cada categoria vira o card de destaque na seção "Catálogo" do site — os demais aparecem ao expandir a categoria.</p>
-      <div class="config-list" id="produtosList"></div>
-    </div>
-
-    <!-- CATÁLOGO: GALERIA -->
-    <div class="config-block">
-      <div class="config-block-head">
-        <h3>Catálogo — Fotos extras <span class="config-count" id="galeriaCount"></span></h3>
-        <button type="button" class="btn btn-outline" id="addGaleriaBtn">+ Adicionar foto</button>
-      </div>
-      <p class="config-hint">Fotos adicionais de trabalhos reais, organizadas por categoria — aparecem junto aos produtos quando o cliente expande uma categoria no site.</p>
-      <div class="config-list" id="galeriaList"></div>
     </div>
 
     <!-- PEDIDOS DE ORÇAMENTO -->
@@ -160,70 +140,74 @@
     <!-- ZONA DE PERIGO -->
     <div class="config-block config-danger-zone">
       <h3>Zona de perigo</h3>
-      <p class="config-hint">Restaura as 14 categorias, produtos e fotos padrão do catálogo. Categorias, produtos e fotos que você criou ou editou manualmente serão substituídos pelos dados de fábrica — essa ação não pode ser desfeita. Depoimentos e pedidos de orçamento não são afetados.</p>
+      <p class="config-hint">Restaura as 14 categorias padrão do catálogo com produtos, descrições e fotos de exemplo. Todas as categorias que você criou ou editou serão substituídas pelos dados de fábrica — essa ação não pode ser desfeita. Depoimentos e pedidos de orçamento não são afetados.</p>
       <button type="button" class="btn admin-btn-danger" id="resetCatalogoBtn">Restaurar catálogo padrão</button>
       <p class="config-status" id="resetCatalogoStatus"></p>
     </div>
   </div>
 </section>
 
-<!-- MODAL: criar/editar item -->
-<div class="modal-overlay" id="formModalOverlay">
-  <div class="modal">
+<!-- MODAL: criar/editar categoria (unificado) -->
+<div class="modal-overlay" id="catModalOverlay">
+  <div class="modal modal-wide">
     <div class="modal-head">
-      <h3 id="formModalTitle">Novo item</h3>
-      <button type="button" class="modal-close" id="formModalClose" aria-label="Fechar">✕</button>
+      <h3 id="catModalTitle">Nova categoria</h3>
+      <button type="button" class="modal-close" id="catModalClose" aria-label="Fechar">✕</button>
     </div>
-    <form id="itemForm">
-      <input type="hidden" id="itemEditId">
-      <input type="hidden" id="itemContext">
-
+    <form id="catForm" autocomplete="off">
+      <input type="hidden" id="catEditId">
+      <div class="form-row">
+        <div class="form-field">
+          <label for="catLabel">Nome da categoria</label>
+          <input type="text" id="catLabel" placeholder="Ex: Canecas Personalizadas" required>
+        </div>
+        <div class="form-field">
+          <label for="catNomeProduto">Nome do produto</label>
+          <input type="text" id="catNomeProduto" placeholder="Ex: Caneca Personalizada" required>
+        </div>
+      </div>
       <div class="form-field">
-        <label id="itemTituloLabel" for="itemTitulo">Título</label>
-        <input type="text" id="itemTitulo" required placeholder="Ex: Caneca Personalizada">
+        <label for="catDescricao">Descrição</label>
+        <textarea id="catDescricao" rows="2" placeholder="Breve descrição do produto..."></textarea>
       </div>
-      <div class="form-field" id="campoCategoria" style="display:none;">
-        <label for="itemCategoria">Categoria</label>
-        <select id="itemCategoria"></select>
+      <div class="form-field">
+        <label>Fotos <span class="cat-fotos-hint">— clique em uma para definir como capa do catálogo</span></label>
+        <div class="cat-fotos-grid" id="catFotosGrid"></div>
+        <label class="btn btn-outline btn-sm cat-add-foto-btn">
+          + Adicionar foto(s)
+          <input type="file" id="catFotoInput" accept="image/*" multiple>
+        </label>
       </div>
-
-      <div class="form-field" id="campoFoto" style="display:none;">
-        <label for="itemFoto">Foto</label>
-        <input type="file" id="itemFoto" accept="image/*">
-        <div class="form-preview" id="itemFotoPreview"></div>
-      </div>
-
-      <div class="form-field" id="campoTexto">
-        <label id="itemTextoLabel" for="itemTexto">Descrição</label>
-        <textarea id="itemTexto" rows="3"></textarea>
-      </div>
-
-      <p class="config-status" id="itemStatus"></p>
-      <div style="display:flex;gap:12px;">
+      <p class="config-status" id="catStatus"></p>
+      <div style="display:flex;gap:12px;margin-top:8px;">
         <button type="submit" class="btn btn-primary">Salvar</button>
-        <button type="button" class="btn btn-outline" id="formModalCancel">Cancelar</button>
+        <button type="button" class="btn btn-outline" id="catModalCancel">Cancelar</button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- MODAL: criar/editar categoria -->
-<div class="modal-overlay" id="categoriaModalOverlay">
+<!-- MODAL: criar/editar depoimento -->
+<div class="modal-overlay" id="depoimentoModalOverlay">
   <div class="modal modal-small">
     <div class="modal-head">
-      <h3 id="categoriaModalTitle">Nova categoria</h3>
-      <button type="button" class="modal-close" id="categoriaModalClose" aria-label="Fechar">✕</button>
+      <h3 id="depoimentoModalTitle">Novo depoimento</h3>
+      <button type="button" class="modal-close" id="depoimentoModalClose" aria-label="Fechar">✕</button>
     </div>
-    <form id="categoriaForm">
-      <input type="hidden" id="categoriaEditId">
+    <form id="depoimentoForm">
+      <input type="hidden" id="depoimentoEditId">
       <div class="form-field">
-        <label for="categoriaLabel">Nome da categoria</label>
-        <input type="text" id="categoriaLabel" placeholder="Ex: Canecas Personalizadas" required>
+        <label for="depoimentoNome">Nome do cliente</label>
+        <input type="text" id="depoimentoNome" placeholder="Ex: Maria S." required>
       </div>
-      <p class="config-status" id="categoriaStatus"></p>
+      <div class="form-field">
+        <label for="depoimentoTexto">Depoimento</label>
+        <textarea id="depoimentoTexto" rows="4" placeholder="O que o cliente disse..." required></textarea>
+      </div>
+      <p class="config-status" id="depoimentoStatus"></p>
       <div style="display:flex;gap:12px;">
-        <button type="submit" class="btn btn-primary" id="categoriaSubmitBtn">Salvar</button>
-        <button type="button" class="btn btn-outline" id="categoriaModalCancel">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+        <button type="button" class="btn btn-outline" id="depoimentoModalCancel">Cancelar</button>
       </div>
     </form>
   </div>

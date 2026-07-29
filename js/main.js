@@ -14,51 +14,22 @@ const io = new IntersectionObserver((entries) => {
 revealEls.forEach(el => io.observe(el));
 
 /* ---------- DADOS PADRÃO (usados até o conteúdo do Firebase carregar) ---------- */
+/* Estrutura unificada: cada categoria carrega nomeProduto, descricao, fotos e thumbKey */
 let categorias = [
-  { label: 'Gravação a Laser' }, { label: 'Mouse Pad' }, { label: 'Mochila Saco Infantil' },
-  { label: 'Bodies e Toalhinhas' }, { label: 'Camisetas' }, { label: 'Kit Festa na Mesa' },
-  { label: 'Canecas Personalizadas' }, { label: 'Garrafas Personalizadas' }, { label: 'Lembrancinhas' },
-  { label: 'Mini Calendários' }, { label: 'Cartões de Visita' }, { label: 'Panfletos' },
-  { label: 'Placas Pix' }, { label: 'Tags' },
-];
-
-/* slugs usados só para gerar seeds de imagem placeholder variadas por categoria */
-const CATEGORY_SLUGS = {
-  'Gravação a Laser': 'laser', 'Mouse Pad': 'mousepad', 'Mochila Saco Infantil': 'mochila',
-  'Bodies e Toalhinhas': 'body', 'Camisetas': 'camiseta', 'Kit Festa na Mesa': 'festa',
-  'Canecas Personalizadas': 'caneca', 'Garrafas Personalizadas': 'garrafa', 'Lembrancinhas': 'lembranca',
-  'Mini Calendários': 'calendario', 'Cartões de Visita': 'cartao', 'Panfletos': 'panfleto',
-  'Placas Pix': 'pix', 'Tags': 'tag',
-};
-const PLACEHOLDER_PHOTOS_PER_CATEGORY = 4;
-
-function buildPlaceholderGaleria(){
-  const arr = [];
-  Object.entries(CATEGORY_SLUGS).forEach(([categoria, slug]) => {
-    for (let n = 1; n <= PLACEHOLDER_PHOTOS_PER_CATEGORY; n++){
-      arr.push({ categoria, label: `${categoria} ${n}`, foto: `https://picsum.photos/seed/gal-${slug}${n}/900/900` });
-    }
-  });
-  return arr;
-}
-
-let galeria = buildPlaceholderGaleria();
-
-let produtos = [
-  { nome:'Copo Térmico Gravado a Laser', texto:'Gravação precisa e resistente, ideal para uso diário ou presente.', foto:'https://picsum.photos/seed/prod-copo/500/380', categoria:'Gravação a Laser' },
-  { nome:'Mouse Pad Personalizado', texto:'Traga sua marca ou arte favorita para o dia a dia.', foto:'https://picsum.photos/seed/prod-mousepad/500/380', categoria:'Mouse Pad' },
-  { nome:'Mochila Saco Infantil', texto:'Bolsas divertidas e personalizadas para a criançada.', foto:'https://picsum.photos/seed/prod-mochila/500/380', categoria:'Mochila Saco Infantil' },
-  { nome:'Bodies e Toalhinhas', texto:'Itens fofos e personalizados para o bebê.', foto:'https://picsum.photos/seed/prod-body/500/380', categoria:'Bodies e Toalhinhas' },
-  { nome:'Camiseta Personalizada', texto:'Estampas exclusivas para eventos, times e uso pessoal.', foto:'https://picsum.photos/seed/prod-camiseta/500/380', categoria:'Camisetas' },
-  { nome:'Kit Festa na Mesa', texto:'Conjunto completo para decorar a mesa de qualquer comemoração.', foto:'https://picsum.photos/seed/prod-kitfesta/500/380', categoria:'Kit Festa na Mesa' },
-  { nome:'Caneca Personalizada', texto:'Estampe fotos, frases ou logotipo com acabamento premium.', foto:'https://picsum.photos/seed/prod-caneca/500/380', categoria:'Canecas Personalizadas' },
-  { nome:'Garrafa Personalizada', texto:'Perfeita para brindes corporativos e presentes especiais.', foto:'https://picsum.photos/seed/prod-garrafa/500/380', categoria:'Garrafas Personalizadas' },
-  { nome:'Lembrancinha Personalizada', texto:'Para casamentos, chás e aniversários com carinho no detalhe.', foto:'https://picsum.photos/seed/prod-lembranca/500/380', categoria:'Lembrancinhas' },
-  { nome:'Mini Calendário Personalizado', texto:'Brindes de fim de ano personalizados com a sua marca.', foto:'https://picsum.photos/seed/prod-calendario/500/380', categoria:'Mini Calendários' },
-  { nome:'Cartão de Visita', texto:'Design profissional que causa a primeira boa impressão.', foto:'https://picsum.photos/seed/prod-cartao/500/380', categoria:'Cartões de Visita' },
-  { nome:'Panfleto Personalizado', texto:'Material impresso para divulgação com arte exclusiva.', foto:'https://picsum.photos/seed/prod-panfleto/500/380', categoria:'Panfletos' },
-  { nome:'Placa Pix', texto:'Praticidade e identidade visual para o seu ponto de venda.', foto:'https://picsum.photos/seed/prod-pix/500/380', categoria:'Placas Pix' },
-  { nome:'Tags Personalizadas', texto:'Etiquetas personalizadas para produtos e embalagens.', foto:'https://picsum.photos/seed/prod-tag/500/380', categoria:'Tags' },
+  { label: 'Gravação a Laser',        nomeProduto: 'Copo Térmico Gravado a Laser',     descricao: 'Gravação precisa e resistente, ideal para uso diário ou presente.',         thumbKey: 'f0', fotos: { f0: 'https://picsum.photos/seed/prod-copo/500/380',      f1: 'https://picsum.photos/seed/gal-laser1/900/900',     f2: 'https://picsum.photos/seed/gal-laser2/900/900',     f3: 'https://picsum.photos/seed/gal-laser3/900/900',     f4: 'https://picsum.photos/seed/gal-laser4/900/900' } },
+  { label: 'Mouse Pad',               nomeProduto: 'Mouse Pad Personalizado',            descricao: 'Traga sua marca ou arte favorita para o dia a dia.',                        thumbKey: 'f0', fotos: { f0: 'https://picsum.photos/seed/prod-mousepad/500/380',   f1: 'https://picsum.photos/seed/gal-mousepad1/900/900',  f2: 'https://picsum.photos/seed/gal-mousepad2/900/900',  f3: 'https://picsum.photos/seed/gal-mousepad3/900/900',  f4: 'https://picsum.photos/seed/gal-mousepad4/900/900' } },
+  { label: 'Mochila Saco Infantil',   nomeProduto: 'Mochila Saco Infantil',              descricao: 'Bolsas divertidas e personalizadas para a criançada.',                      thumbKey: 'f0', fotos: { f0: 'https://picsum.photos/seed/prod-mochila/500/380',    f1: 'https://picsum.photos/seed/gal-mochila1/900/900',   f2: 'https://picsum.photos/seed/gal-mochila2/900/900',   f3: 'https://picsum.photos/seed/gal-mochila3/900/900',   f4: 'https://picsum.photos/seed/gal-mochila4/900/900' } },
+  { label: 'Bodies e Toalhinhas',     nomeProduto: 'Bodies e Toalhinhas',                descricao: 'Itens fofos e personalizados para o bebê.',                                 thumbKey: 'f0', fotos: { f0: 'https://picsum.photos/seed/prod-body/500/380',       f1: 'https://picsum.photos/seed/gal-body1/900/900',      f2: 'https://picsum.photos/seed/gal-body2/900/900',      f3: 'https://picsum.photos/seed/gal-body3/900/900',      f4: 'https://picsum.photos/seed/gal-body4/900/900' } },
+  { label: 'Camisetas',               nomeProduto: 'Camiseta Personalizada',             descricao: 'Estampas exclusivas para eventos, times e uso pessoal.',                    thumbKey: 'f0', fotos: { f0: 'https://picsum.photos/seed/prod-camiseta/500/380',  f1: 'https://picsum.photos/seed/gal-camiseta1/900/900',  f2: 'https://picsum.photos/seed/gal-camiseta2/900/900',  f3: 'https://picsum.photos/seed/gal-camiseta3/900/900',  f4: 'https://picsum.photos/seed/gal-camiseta4/900/900' } },
+  { label: 'Kit Festa na Mesa',       nomeProduto: 'Kit Festa na Mesa',                  descricao: 'Conjunto completo para decorar a mesa de qualquer comemoração.',             thumbKey: 'f0', fotos: { f0: 'https://picsum.photos/seed/prod-kitfesta/500/380', f1: 'https://picsum.photos/seed/gal-festa1/900/900',     f2: 'https://picsum.photos/seed/gal-festa2/900/900',     f3: 'https://picsum.photos/seed/gal-festa3/900/900',     f4: 'https://picsum.photos/seed/gal-festa4/900/900' } },
+  { label: 'Canecas Personalizadas',  nomeProduto: 'Caneca Personalizada',               descricao: 'Estampe fotos, frases ou logotipo com acabamento premium.',                  thumbKey: 'f0', fotos: { f0: 'https://picsum.photos/seed/prod-caneca/500/380',   f1: 'https://picsum.photos/seed/gal-caneca1/900/900',    f2: 'https://picsum.photos/seed/gal-caneca2/900/900',    f3: 'https://picsum.photos/seed/gal-caneca3/900/900',    f4: 'https://picsum.photos/seed/gal-caneca4/900/900' } },
+  { label: 'Garrafas Personalizadas', nomeProduto: 'Garrafa Personalizada',              descricao: 'Perfeita para brindes corporativos e presentes especiais.',                  thumbKey: 'f0', fotos: { f0: 'https://picsum.photos/seed/prod-garrafa/500/380',  f1: 'https://picsum.photos/seed/gal-garrafa1/900/900',   f2: 'https://picsum.photos/seed/gal-garrafa2/900/900',   f3: 'https://picsum.photos/seed/gal-garrafa3/900/900',   f4: 'https://picsum.photos/seed/gal-garrafa4/900/900' } },
+  { label: 'Lembrancinhas',           nomeProduto: 'Lembrancinha Personalizada',         descricao: 'Para casamentos, chás e aniversários com carinho no detalhe.',               thumbKey: 'f0', fotos: { f0: 'https://picsum.photos/seed/prod-lembranca/500/380', f1: 'https://picsum.photos/seed/gal-lembranca1/900/900', f2: 'https://picsum.photos/seed/gal-lembranca2/900/900', f3: 'https://picsum.photos/seed/gal-lembranca3/900/900', f4: 'https://picsum.photos/seed/gal-lembranca4/900/900' } },
+  { label: 'Mini Calendários',        nomeProduto: 'Mini Calendário Personalizado',      descricao: 'Brindes de fim de ano personalizados com a sua marca.',                      thumbKey: 'f0', fotos: { f0: 'https://picsum.photos/seed/prod-calendario/500/380',f1: 'https://picsum.photos/seed/gal-calendario1/900/900',f2: 'https://picsum.photos/seed/gal-calendario2/900/900',f3: 'https://picsum.photos/seed/gal-calendario3/900/900',f4: 'https://picsum.photos/seed/gal-calendario4/900/900' } },
+  { label: 'Cartões de Visita',       nomeProduto: 'Cartão de Visita',                   descricao: 'Design profissional que causa a primeira boa impressão.',                    thumbKey: 'f0', fotos: { f0: 'https://picsum.photos/seed/prod-cartao/500/380',   f1: 'https://picsum.photos/seed/gal-cartao1/900/900',    f2: 'https://picsum.photos/seed/gal-cartao2/900/900',    f3: 'https://picsum.photos/seed/gal-cartao3/900/900',    f4: 'https://picsum.photos/seed/gal-cartao4/900/900' } },
+  { label: 'Panfletos',               nomeProduto: 'Panfleto Personalizado',             descricao: 'Material impresso para divulgação com arte exclusiva.',                      thumbKey: 'f0', fotos: { f0: 'https://picsum.photos/seed/prod-panfleto/500/380', f1: 'https://picsum.photos/seed/gal-panfleto1/900/900',  f2: 'https://picsum.photos/seed/gal-panfleto2/900/900',  f3: 'https://picsum.photos/seed/gal-panfleto3/900/900',  f4: 'https://picsum.photos/seed/gal-panfleto4/900/900' } },
+  { label: 'Placas Pix',              nomeProduto: 'Placa Pix',                          descricao: 'Praticidade e identidade visual para o seu ponto de venda.',                 thumbKey: 'f0', fotos: { f0: 'https://picsum.photos/seed/prod-pix/500/380',       f1: 'https://picsum.photos/seed/gal-pix1/900/900',       f2: 'https://picsum.photos/seed/gal-pix2/900/900',       f3: 'https://picsum.photos/seed/gal-pix3/900/900',       f4: 'https://picsum.photos/seed/gal-pix4/900/900' } },
+  { label: 'Tags',                    nomeProduto: 'Tags Personalizadas',                descricao: 'Etiquetas personalizadas para produtos e embalagens.',                       thumbKey: 'f0', fotos: { f0: 'https://picsum.photos/seed/prod-tag/500/380',       f1: 'https://picsum.photos/seed/gal-tag1/900/900',       f2: 'https://picsum.photos/seed/gal-tag2/900/900',       f3: 'https://picsum.photos/seed/gal-tag3/900/900',       f4: 'https://picsum.photos/seed/gal-tag4/900/900' } },
 ];
 
 let depoimentos = [
@@ -66,16 +37,28 @@ let depoimentos = [
   { nome:'Rodrigo A.', texto:'Pedi garrafas para o aniversário da empresa e todo mundo elogiou o acabamento da gravação a laser.' },
 ];
 
-/* ---------- RENDER: CATÁLOGO (Serviços + Galeria + Produtos unificados) ---------- */
-const catalogGrid = document.getElementById('catalogGrid');
+/* ---------- HELPERS DE CATEGORIA ---------- */
+function catThumbUrl(cat){
+  const fotos = cat.fotos || {};
+  return (cat.thumbKey && fotos[cat.thumbKey]) ? fotos[cat.thumbKey] : Object.values(fotos)[0];
+}
 
 function representativeFor(catLabel){
-  const prod = produtos.find(p => p.categoria === catLabel);
-  if (prod) return { titulo: prod.nome, texto: prod.texto, foto: prod.foto };
-  const gal = galeria.find(g => g.categoria === catLabel);
-  if (gal) return { titulo: gal.label, texto: '', foto: gal.foto };
-  return null;
+  const cat = categorias.find(c => c.label === catLabel);
+  if (!cat || !cat.fotos || Object.keys(cat.fotos).length === 0) return null;
+  return { titulo: cat.nomeProduto || cat.label, texto: cat.descricao || '', foto: catThumbUrl(cat) };
 }
+
+/* Retorna todas as fotos de todas as categorias (ou de uma só) com { categoria, label, foto } */
+function catalogImages(filterCat){
+  return categorias.flatMap(cat => {
+    if (filterCat && cat.label !== filterCat) return [];
+    return Object.values(cat.fotos || {}).map(foto => ({ categoria: cat.label, label: cat.nomeProduto || cat.label, foto }));
+  });
+}
+
+/* ---------- RENDER: CATÁLOGO ---------- */
+const catalogGrid = document.getElementById('catalogGrid');
 
 function renderCatalog(){
   const cards = categorias
@@ -95,16 +78,12 @@ function renderCatalog(){
     </div>
   `).join('');
 
-  attachCatalogHandlers();
-}
-
-function attachCatalogHandlers(){
   catalogGrid.querySelectorAll('[data-fotos-cat]').forEach(btn => {
     btn.addEventListener('click', () => openCatalogExpand(btn.dataset.fotosCat));
   });
 }
 
-/* ---------- EXPANSÃO DA CATEGORIA: fotos reais + orçamento embutido ---------- */
+/* ---------- EXPANSÃO DA CATEGORIA ---------- */
 const catalogExpand = document.getElementById('catalogExpand');
 const catalogExpandTitle = document.getElementById('catalogExpandTitle');
 const catalogExpandText = document.getElementById('catalogExpandText');
@@ -114,9 +93,12 @@ let currentExpandCat = null;
 
 function openCatalogExpand(cat){
   currentExpandCat = cat;
-  const imgs = catalogImages().filter(i => i.categoria === cat);
+  const catObj = categorias.find(c => c.label === cat);
+  const imgs = catalogImages(cat);
   catalogExpandTitle.textContent = cat;
-  catalogExpandText.textContent = `Fotos reais de trabalhos em ${cat} — confira o acabamento antes de pedir seu orçamento.`;
+  catalogExpandText.textContent = catObj && catObj.descricao
+    ? catObj.descricao
+    : `Fotos reais de trabalhos em ${cat} — confira o acabamento antes de pedir seu orçamento.`;
   catalogExpandGrid.innerHTML = imgs.map(i => `<img loading="lazy" src="${i.foto}" alt="${i.label}">`).join('') || '<p>Em breve, novas fotos por aqui.</p>';
   catalogExpandGrid.querySelectorAll('img').forEach((img, idx) => {
     img.addEventListener('click', () => openLightbox(imgs, idx));
@@ -137,16 +119,10 @@ document.getElementById('catalogViewAllBtn').addEventListener('click', () => {
   document.getElementById('catalogGallery').scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
-/* ---------- RENDER: GALERIA "VER MAIS" (produtos + fotos extras, com filtro por categoria) ---------- */
+/* ---------- RENDER: GALERIA "VER MAIS" ---------- */
 const galleryTabs = document.getElementById('galleryTabs');
 const galleryGrid = document.getElementById('galleryGrid');
 let currentGalleryFilter = 'Todos';
-
-function catalogImages(){
-  const prodImgs = produtos.map(p => ({ categoria: p.categoria || 'Geral', label: p.nome, foto: p.foto }));
-  const galImgs = galeria.map(g => ({ categoria: g.categoria || 'Geral', label: g.label, foto: g.foto }));
-  return [...prodImgs, ...galImgs];
-}
 
 function renderGalleryTabs(){
   const cats = ['Todos', ...Array.from(new Set(catalogImages().map(i => i.categoria)))];
@@ -176,7 +152,7 @@ galleryTabs.addEventListener('click', (e) => {
   renderCatalogGallery();
 });
 
-/* LIGHTBOX (com navegação para as fotos ao lado) */
+/* LIGHTBOX */
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightboxImg');
 let lightboxImages = [];
@@ -233,16 +209,18 @@ const quoteSuccess = document.getElementById('quoteSuccess');
 let quoteQuantities = {};
 
 function renderQuoteItemPicker(){
-  quoteItemPicker.innerHTML = produtos.map(p => {
-    const qty = quoteQuantities[p.nome] || 0;
+  quoteItemPicker.innerHTML = categorias.map(cat => {
+    const nome = cat.nomeProduto || cat.label;
+    const thumb = catThumbUrl(cat);
+    const qty = quoteQuantities[nome] || 0;
     return `
-    <div class="quote-pick-row ${qty > 0 ? 'selected' : ''}" data-nome="${p.nome}">
-      <div class="quote-pick-photo"><img src="${p.foto}" alt="${p.nome}" loading="lazy"></div>
-      <span class="quote-pick-name">${p.nome}</span>
+    <div class="quote-pick-row ${qty > 0 ? 'selected' : ''}" data-nome="${nome}">
+      ${thumb ? `<div class="quote-pick-photo"><img src="${thumb}" alt="${nome}" loading="lazy"></div>` : ''}
+      <span class="quote-pick-name">${nome}</span>
       <div class="quote-pick-qty">
-        <button type="button" class="qty-btn" data-action="dec" data-nome="${p.nome}">−</button>
+        <button type="button" class="qty-btn" data-action="dec" data-nome="${nome}">−</button>
         <span class="qty-value">${qty}</span>
-        <button type="button" class="qty-btn" data-action="inc" data-nome="${p.nome}">+</button>
+        <button type="button" class="qty-btn" data-action="inc" data-nome="${nome}">+</button>
       </div>
     </div>`;
   }).join('');
@@ -266,8 +244,8 @@ quoteItemPicker.addEventListener('click', (e) => {
 function openQuoteModal(cat){
   quoteQuantities = {};
   if (cat){
-    const rep = representativeFor(cat);
-    if (rep) quoteQuantities[rep.titulo] = 1;
+    const catObj = categorias.find(c => c.label === cat);
+    if (catObj) quoteQuantities[catObj.nomeProduto || catObj.label] = 1;
   }
   renderQuoteItemPicker();
   quoteForm.reset();
@@ -325,7 +303,7 @@ function renderTestimonials(){
   testGrid.innerHTML = depoimentos.map(t => `
     <div class="test-card">
       <div class="stars">★★★★★</div>
-      <p>“${t.texto}”</p>
+      <p>"${t.texto}"</p>
       <div class="test-author"><div class="test-avatar">${t.nome[0]}</div>${t.nome}</div>
     </div>
   `).join('') + `<div class="test-card empty">Seu depoimento pode aparecer aqui — envie sua avaliação depois de receber seu pedido!</div>`;
@@ -361,14 +339,12 @@ renderCatalog();
 renderCatalogGallery();
 renderTestimonials();
 
-/* ---------- CARREGA CONTEÚDO REAL DO FIREBASE (se configurado) ---------- */
+/* ---------- CARREGA CONTEÚDO REAL DO FIREBASE ---------- */
 if (typeof arcDb !== 'undefined'){
   arcDb.ref('siteConfig').once('value').then((snap) => {
     const data = snap.val() || {};
     let catalogDirty = false;
     if (data.categorias){ categorias = Object.values(data.categorias); catalogDirty = true; }
-    if (data.galeria){ galeria = Object.values(data.galeria); catalogDirty = true; }
-    if (data.produtos){ produtos = Object.values(data.produtos); catalogDirty = true; }
     if (catalogDirty){ renderCatalog(); renderCatalogGallery(); }
     if (data.depoimentos){
       depoimentos = Object.values(data.depoimentos);

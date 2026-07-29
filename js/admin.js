@@ -130,36 +130,34 @@ confirmModalCancel.addEventListener('click', closeConfirmModal);
 confirmModalClose.addEventListener('click', closeConfirmModal);
 confirmModalOverlay.addEventListener('click', (e) => { if (e.target === confirmModalOverlay) closeConfirmModal(); });
 
-/* ---------- CATEGORIAS ---------- */
+/* ---------- CATÁLOGO (unificado: categoria + produto + fotos) ---------- */
 let categoriasCache = [];
 const categoriasListEl = document.getElementById('categoriasList');
-const categoriasCountEl = document.getElementById('categoriasCount');
-
-function refreshCategoriaSelect(selected){
-  const select = document.getElementById('itemCategoria');
-  const current = selected !== undefined ? selected : select.value;
-  select.innerHTML = categoriasCache.map(c => `<option value="${c.label}">${c.label}</option>`).join('');
-  if (current && ![...select.options].some(o => o.value === current)){
-    const opt = document.createElement('option');
-    opt.value = current;
-    opt.textContent = current + ' (categoria removida)';
-    select.appendChild(opt);
-  }
-  if (current) select.value = current;
-}
+const catalogoCountEl = document.getElementById('catalogoCount');
 
 function renderCategorias(list){
   categoriasCache = list;
-  if (categoriasCountEl) categoriasCountEl.textContent = `(${list.length})`;
-  categoriasListEl.innerHTML = list.map(c => `
-    <div class="config-item">
-      <div class="config-item-body"><strong>${c.label}</strong></div>
-      <div class="config-item-actions">
-        <button data-action="edit" data-id="${c.id}">Editar</button>
-        <button data-action="delete" class="danger" data-id="${c.id}">Excluir</button>
-      </div>
-    </div>`).join('') || '<p class="config-empty">Nenhuma categoria cadastrada.</p>';
-  refreshCategoriaSelect();
+  if (catalogoCountEl) catalogoCountEl.textContent = `(${list.length})`;
+  categoriasListEl.innerHTML = list.map(cat => {
+    const fotos = cat.fotos || {};
+    const thumbUrl = cat.thumbKey && fotos[cat.thumbKey] ? fotos[cat.thumbKey] : Object.values(fotos)[0];
+    const fotoCount = Object.keys(fotos).length;
+    const thumb = thumbUrl ? `<img class="config-item-thumb" src="${thumbUrl}">` : '<div class="config-item-thumb config-item-thumb-empty"></div>';
+    const sub = [cat.nomeProduto, fotoCount > 0 ? `${fotoCount} foto${fotoCount !== 1 ? 's' : ''}` : null].filter(Boolean).join(' · ');
+    return `
+      <div class="config-item">
+        ${thumb}
+        <div class="config-item-body">
+          <strong>${cat.label}</strong>
+          ${sub ? `<span>${sub}</span>` : ''}
+          ${cat.descricao ? `<span class="config-item-desc">${cat.descricao}</span>` : ''}
+        </div>
+        <div class="config-item-actions">
+          <button data-action="edit" data-id="${cat.id}">Editar</button>
+          <button data-action="delete" class="danger" data-id="${cat.id}">Excluir</button>
+        </div>
+      </div>`;
+  }).join('') || '<p class="config-empty">Nenhuma categoria cadastrada.</p>';
 }
 
 categoriasListEl.addEventListener('click', (e) => {
@@ -168,268 +166,188 @@ categoriasListEl.addEventListener('click', (e) => {
   const cat = categoriasCache.find(c => c.id === btn.dataset.id);
   if (!cat) return;
   if (btn.dataset.action === 'delete'){
-    openConfirmModal(`Excluir a categoria "${cat.label}"? Trabalhos já cadastrados nela continuam salvos, mas ela some do catálogo e dos filtros.`, () => {
+    openConfirmModal(`Excluir a categoria "${cat.label}" e todas as suas fotos? Essa ação não pode ser desfeita.`, () => {
       arcDb.ref(`siteConfig/categorias/${cat.id}`).remove();
     });
   } else if (btn.dataset.action === 'edit'){
-    openCategoriaModal(cat);
+    openCatModal(cat);
   }
 });
 
-/* MODAL: criar/editar categoria */
-const categoriaModalOverlay = document.getElementById('categoriaModalOverlay');
-const categoriaModalTitle = document.getElementById('categoriaModalTitle');
-const categoriaModalClose = document.getElementById('categoriaModalClose');
-const categoriaModalCancel = document.getElementById('categoriaModalCancel');
-const categoriaForm = document.getElementById('categoriaForm');
-const categoriaEditId = document.getElementById('categoriaEditId');
-const categoriaLabelInput = document.getElementById('categoriaLabel');
-const categoriaStatus = document.getElementById('categoriaStatus');
+/* MODAL: criar/editar categoria (unificado) */
+const catModalOverlay = document.getElementById('catModalOverlay');
+const catModalTitle = document.getElementById('catModalTitle');
+const catModalClose = document.getElementById('catModalClose');
+const catModalCancel = document.getElementById('catModalCancel');
+const catForm = document.getElementById('catForm');
+const catEditId = document.getElementById('catEditId');
+const catLabel = document.getElementById('catLabel');
+const catNomeProduto = document.getElementById('catNomeProduto');
+const catDescricao = document.getElementById('catDescricao');
+const catFotosGrid = document.getElementById('catFotosGrid');
+const catFotoInput = document.getElementById('catFotoInput');
+const catStatus = document.getElementById('catStatus');
 
-function openCategoriaModal(existing){
-  categoriaForm.reset();
-  categoriaEditId.value = existing ? existing.id : '';
-  categoriaLabelInput.value = existing ? existing.label : '';
-  categoriaStatus.textContent = '';
-  categoriaModalTitle.textContent = existing ? 'Editar categoria' : 'Nova categoria';
-  categoriaModalOverlay.classList.add('open');
+let pendingFotos = {};
+let pendingThumbKey = null;
+
+function renderCatFotos(){
+  const keys = Object.keys(pendingFotos);
+  if (keys.length === 0){
+    catFotosGrid.innerHTML = '<p class="cat-fotos-empty">Nenhuma foto adicionada ainda.</p>';
+    return;
+  }
+  catFotosGrid.innerHTML = keys.map(k => `
+    <div class="cat-foto-item ${k === pendingThumbKey ? 'is-thumb' : ''}" data-key="${k}">
+      <img src="${pendingFotos[k]}" loading="lazy">
+      <div class="cat-foto-badge">Capa</div>
+      <button type="button" class="cat-foto-remove" data-remove="${k}" aria-label="Remover">✕</button>
+    </div>`).join('');
 }
-function closeCategoriaModal(){ categoriaModalOverlay.classList.remove('open'); }
-categoriaModalClose.addEventListener('click', closeCategoriaModal);
-categoriaModalCancel.addEventListener('click', closeCategoriaModal);
-categoriaModalOverlay.addEventListener('click', (e) => { if (e.target === categoriaModalOverlay) closeCategoriaModal(); });
-document.getElementById('addCategoriaBtn').addEventListener('click', () => openCategoriaModal());
 
-categoriaForm.addEventListener('submit', (e) => {
+catFotosGrid.addEventListener('click', (e) => {
+  const removeBtn = e.target.closest('[data-remove]');
+  if (removeBtn){
+    e.stopPropagation();
+    const k = removeBtn.dataset.remove;
+    delete pendingFotos[k];
+    if (pendingThumbKey === k) pendingThumbKey = Object.keys(pendingFotos)[0] || null;
+    renderCatFotos();
+    return;
+  }
+  const item = e.target.closest('.cat-foto-item');
+  if (item){
+    pendingThumbKey = item.dataset.key;
+    renderCatFotos();
+  }
+});
+
+catFotoInput.addEventListener('change', async (e) => {
+  const files = [...(e.target.files || [])];
+  if (!files.length) return;
+  catStatus.textContent = `Processando ${files.length > 1 ? files.length + ' fotos' : 'foto'}...`;
+  for (const file of files){
+    const key = `f${Date.now().toString(36)}${Math.random().toString(36).slice(2, 4)}`;
+    const dataUrl = await resizeImage(file, 900);
+    pendingFotos[key] = dataUrl;
+    if (!pendingThumbKey) pendingThumbKey = key;
+  }
+  catStatus.textContent = '';
+  renderCatFotos();
+  e.target.value = '';
+});
+
+function openCatModal(existing){
+  catForm.reset();
+  catEditId.value = existing ? existing.id : '';
+  catLabel.value = existing ? (existing.label || '') : '';
+  catNomeProduto.value = existing ? (existing.nomeProduto || '') : '';
+  catDescricao.value = existing ? (existing.descricao || '') : '';
+  pendingFotos = existing && existing.fotos ? { ...existing.fotos } : {};
+  pendingThumbKey = existing ? (existing.thumbKey || Object.keys(pendingFotos)[0] || null) : null;
+  catStatus.textContent = '';
+  catModalTitle.textContent = existing ? 'Editar categoria' : 'Nova categoria';
+  renderCatFotos();
+  catModalOverlay.classList.add('open');
+}
+function closeCatModal(){ catModalOverlay.classList.remove('open'); }
+catModalClose.addEventListener('click', closeCatModal);
+catModalCancel.addEventListener('click', closeCatModal);
+catModalOverlay.addEventListener('click', (e) => { if (e.target === catModalOverlay) closeCatModal(); });
+document.getElementById('addCategoriaBtn').addEventListener('click', () => openCatModal());
+
+catForm.addEventListener('submit', (e) => {
   e.preventDefault();
-  const label = categoriaLabelInput.value.trim();
-  if (!label) return;
-  const id = categoriaEditId.value;
+  const label = catLabel.value.trim();
+  const nomeProduto = catNomeProduto.value.trim();
+  if (!label || !nomeProduto){ catStatus.textContent = 'Preencha o nome da categoria e do produto.'; return; }
+
+  const item = { label, nomeProduto, descricao: catDescricao.value.trim() };
+  const fotoKeys = Object.keys(pendingFotos);
+  if (fotoKeys.length > 0){
+    item.fotos = { ...pendingFotos };
+    item.thumbKey = pendingThumbKey && pendingFotos[pendingThumbKey] ? pendingThumbKey : fotoKeys[0];
+  }
+
+  const id = catEditId.value;
   const ref = id ? arcDb.ref(`siteConfig/categorias/${id}`) : arcDb.ref('siteConfig/categorias').push();
-  ref.set({ label }).then(() => closeCategoriaModal()).catch((err) => {
-    categoriaStatus.textContent = 'Erro ao salvar. Tente novamente.';
+  ref.set(item).then(() => closeCatModal()).catch((err) => {
+    catStatus.textContent = 'Erro ao salvar. Tente com fotos menores.';
     console.error(err);
   });
 });
 
-/* ---------- MODAL DE FORMULÁRIO (compartilhado entre todos os tipos de conteúdo) ---------- */
-const formModalOverlay = document.getElementById('formModalOverlay');
-const formModalTitle = document.getElementById('formModalTitle');
-const formModalClose = document.getElementById('formModalClose');
-const formModalCancel = document.getElementById('formModalCancel');
-const itemForm = document.getElementById('itemForm');
-const itemEditId = document.getElementById('itemEditId');
-const itemContextInput = document.getElementById('itemContext');
+/* ---------- DEPOIMENTOS ---------- */
+const depoimentoModalOverlay = document.getElementById('depoimentoModalOverlay');
+const depoimentoModalTitle = document.getElementById('depoimentoModalTitle');
+const depoimentoModalClose = document.getElementById('depoimentoModalClose');
+const depoimentoModalCancel = document.getElementById('depoimentoModalCancel');
+const depoimentoForm = document.getElementById('depoimentoForm');
+const depoimentoEditId = document.getElementById('depoimentoEditId');
+const depoimentoNome = document.getElementById('depoimentoNome');
+const depoimentoTexto = document.getElementById('depoimentoTexto');
+const depoimentoStatus = document.getElementById('depoimentoStatus');
 
-const itemTituloLabel = document.getElementById('itemTituloLabel');
-const itemTitulo = document.getElementById('itemTitulo');
-const campoTexto = document.getElementById('campoTexto');
-const itemTextoLabel = document.getElementById('itemTextoLabel');
-const itemTexto = document.getElementById('itemTexto');
-const campoCategoria = document.getElementById('campoCategoria');
-const campoFoto = document.getElementById('campoFoto');
-const itemFotoInput = document.getElementById('itemFoto');
-const itemFotoPreview = document.getElementById('itemFotoPreview');
-const itemStatus = document.getElementById('itemStatus');
+let depoimentosCache = [];
 
-let pendingFoto = null;
-
-itemFotoInput.addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  pendingFoto = await resizeImage(file, 900);
-  itemFotoPreview.innerHTML = `<div class="form-thumb"><img src="${pendingFoto}"></div>`;
-});
-
-const CONTEXT_TITLES = {
-  galeria: 'foto extra', produto: 'produto', depoimento: 'depoimento',
-};
-const CONTEXT_COLLECTION = {
-  galeria: 'galeria', produto: 'produtos', depoimento: 'depoimentos',
-};
-const CONTEXT_LABELS = {
-  galeria: 'Nome do trabalho', produto: 'Nome do produto', depoimento: 'Nome do cliente',
-};
-
-function openFormModal(context, existing){
-  itemForm.reset();
-  itemEditId.value = existing ? existing.id : '';
-  itemContextInput.value = context;
-  pendingFoto = existing && existing.foto ? existing.foto : null;
-  itemFotoPreview.innerHTML = pendingFoto ? `<div class="form-thumb"><img src="${pendingFoto}"></div>` : '';
-  itemStatus.textContent = '';
-
-  const hasTexto = context !== 'galeria';
-  const hasCategoria = context === 'galeria' || context === 'produto';
-  const hasFoto = context === 'galeria' || context === 'produto';
-
-  campoTexto.style.display = hasTexto ? '' : 'none';
-  campoCategoria.style.display = hasCategoria ? '' : 'none';
-  campoFoto.style.display = hasFoto ? '' : 'none';
-
-  itemTituloLabel.textContent = CONTEXT_LABELS[context];
-  itemTextoLabel.textContent = context === 'depoimento' ? 'Depoimento' : 'Descrição';
-
-  formModalTitle.textContent = (existing ? 'Editar ' : 'Novo ') + CONTEXT_TITLES[context];
-  if (hasCategoria) refreshCategoriaSelect(existing ? existing.categoria : '');
-
-  if (existing){
-    itemTitulo.value = existing.titulo || existing.nome || existing.label || '';
-    if (hasTexto) itemTexto.value = existing.texto || '';
-  }
-
-  formModalOverlay.classList.add('open');
-}
-function closeFormModal(){ formModalOverlay.classList.remove('open'); }
-formModalClose.addEventListener('click', closeFormModal);
-formModalCancel.addEventListener('click', closeFormModal);
-formModalOverlay.addEventListener('click', (e) => { if (e.target === formModalOverlay) closeFormModal(); });
-
-document.getElementById('addGaleriaBtn').addEventListener('click', () => openFormModal('galeria'));
-document.getElementById('addProdutoBtn').addEventListener('click', () => openFormModal('produto'));
-document.getElementById('addDepoimentoBtn').addEventListener('click', () => openFormModal('depoimento'));
-
-itemForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const context = itemContextInput.value;
-  const nome = itemTitulo.value.trim();
-  if (!nome) return;
-
-  let item = null;
-  if (context === 'galeria'){
-    if (!pendingFoto){ itemStatus.textContent = 'Envie uma foto.'; return; }
-    item = { categoria: document.getElementById('itemCategoria').value, label: nome, foto: pendingFoto };
-  } else if (context === 'produto'){
-    if (!pendingFoto){ itemStatus.textContent = 'Envie uma foto.'; return; }
-    const texto = itemTexto.value.trim();
-    if (!texto){ itemStatus.textContent = 'Preencha a descrição.'; return; }
-    item = { nome, texto, foto: pendingFoto, categoria: document.getElementById('itemCategoria').value };
-  } else if (context === 'depoimento'){
-    const texto = itemTexto.value.trim();
-    if (!texto){ itemStatus.textContent = 'Preencha o depoimento.'; return; }
-    item = { nome, texto };
-  }
-  if (!item) return;
-
-  const collection = CONTEXT_COLLECTION[context];
-  const id = itemEditId.value;
-  const ref = id ? arcDb.ref(`siteConfig/${collection}/${id}`) : arcDb.ref(`siteConfig/${collection}`).push();
-  ref.set(item).then(() => closeFormModal()).catch((err) => {
-    itemStatus.textContent = 'Erro ao salvar. Tente com uma foto menor.';
-    console.error(err);
-  });
-});
-
-/* ---------- LISTAS ---------- */
-function listItemHtml(item){
-  const thumb = item.foto ? `<img class="config-item-thumb" src="${item.foto}">` : '';
-  const title = item.titulo || item.nome || item.label;
-  const sub = item.texto || item.categoria || '';
-  return `
-    <div class="config-item">
-      ${thumb}
-      <div class="config-item-body"><strong>${title}</strong>${sub ? `<span>${sub}</span>` : ''}</div>
-      <div class="config-item-actions">
-        <button data-action="edit" data-id="${item.id}">Editar</button>
-        <button data-action="delete" class="danger" data-id="${item.id}">Excluir</button>
-      </div>
-    </div>`;
-}
-
-let dataCache = { galeria: [], produtos: [], depoimentos: [] };
-let refs = [];
-
-function renderCollection(key, listEl, countEl, emptyMsg){
-  const list = dataCache[key];
+function renderDepoimentos(list){
+  depoimentosCache = list;
+  const listEl = document.getElementById('depoimentosList');
+  const countEl = document.getElementById('depoimentosCount');
   if (countEl) countEl.textContent = `(${list.length})`;
-  listEl.innerHTML = list.map(listItemHtml).join('') || `<p class="config-empty">${emptyMsg}</p>`;
+  listEl.innerHTML = list.map(dep => `
+    <div class="config-item">
+      <div class="config-item-body">
+        <strong>${dep.nome}</strong>
+        <span>${dep.texto}</span>
+      </div>
+      <div class="config-item-actions">
+        <button data-action="edit" data-id="${dep.id}">Editar</button>
+        <button data-action="delete" class="danger" data-id="${dep.id}">Excluir</button>
+      </div>
+    </div>`).join('') || '<p class="config-empty">Nenhum depoimento cadastrado.</p>';
 }
 
-function handleListClick(context){
-  return (e) => {
-    const btn = e.target.closest('button[data-action]');
-    if (!btn) return;
-    const collection = CONTEXT_COLLECTION[context];
-    const item = dataCache[collection].find(i => i.id === btn.dataset.id);
-    if (!item) return;
-    if (btn.dataset.action === 'delete'){
-      const title = item.titulo || item.nome || item.label;
-      openConfirmModal(`Excluir "${title}"? Essa ação não pode ser desfeita.`, () => arcDb.ref(`siteConfig/${collection}/${item.id}`).remove());
-    } else if (btn.dataset.action === 'edit'){
-      openFormModal(context, item);
-    }
-  };
+document.getElementById('depoimentosList').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-action]');
+  if (!btn) return;
+  const dep = depoimentosCache.find(d => d.id === btn.dataset.id);
+  if (!dep) return;
+  if (btn.dataset.action === 'delete'){
+    openConfirmModal(`Excluir o depoimento de "${dep.nome}"?`, () => arcDb.ref(`siteConfig/depoimentos/${dep.id}`).remove());
+  } else {
+    openDepoimentoModal(dep);
+  }
+});
+
+function openDepoimentoModal(existing){
+  depoimentoForm.reset();
+  depoimentoEditId.value = existing ? existing.id : '';
+  depoimentoNome.value = existing ? (existing.nome || '') : '';
+  depoimentoTexto.value = existing ? (existing.texto || '') : '';
+  depoimentoStatus.textContent = '';
+  depoimentoModalTitle.textContent = existing ? 'Editar depoimento' : 'Novo depoimento';
+  depoimentoModalOverlay.classList.add('open');
 }
+function closeDepoimentoModal(){ depoimentoModalOverlay.classList.remove('open'); }
+depoimentoModalClose.addEventListener('click', closeDepoimentoModal);
+depoimentoModalCancel.addEventListener('click', closeDepoimentoModal);
+depoimentoModalOverlay.addEventListener('click', (e) => { if (e.target === depoimentoModalOverlay) closeDepoimentoModal(); });
+document.getElementById('addDepoimentoBtn').addEventListener('click', () => openDepoimentoModal());
 
-document.getElementById('galeriaList').addEventListener('click', handleListClick('galeria'));
-document.getElementById('produtosList').addEventListener('click', handleListClick('produto'));
-document.getElementById('depoimentosList').addEventListener('click', handleListClick('depoimento'));
-
-/* ---------- SEEDS (mesmos dados padrão do site, só na primeira vez) ---------- */
-/* slugs usados só para gerar seeds de imagem placeholder variadas por categoria (espelha js/main.js) */
-const CATEGORY_SLUGS = {
-  'Gravação a Laser': 'laser', 'Mouse Pad': 'mousepad', 'Mochila Saco Infantil': 'mochila',
-  'Bodies e Toalhinhas': 'body', 'Camisetas': 'camiseta', 'Kit Festa na Mesa': 'festa',
-  'Canecas Personalizadas': 'caneca', 'Garrafas Personalizadas': 'garrafa', 'Lembrancinhas': 'lembranca',
-  'Mini Calendários': 'calendario', 'Cartões de Visita': 'cartao', 'Panfletos': 'panfleto',
-  'Placas Pix': 'pix', 'Tags': 'tag',
-};
-const PLACEHOLDER_PHOTOS_PER_CATEGORY = 4;
-
-function buildSeedGaleria(){
-  const seed = {};
-  let i = 1;
-  Object.entries(CATEGORY_SLUGS).forEach(([categoria, slug]) => {
-    for (let n = 1; n <= PLACEHOLDER_PHOTOS_PER_CATEGORY; n++){
-      seed[`g${String(i).padStart(3, '0')}`] = { categoria, label: `${categoria} ${n}`, foto: `https://picsum.photos/seed/gal-${slug}${n}/900/900` };
-      i++;
-    }
+depoimentoForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const nome = depoimentoNome.value.trim();
+  const texto = depoimentoTexto.value.trim();
+  if (!nome || !texto){ depoimentoStatus.textContent = 'Preencha todos os campos.'; return; }
+  const item = { nome, texto };
+  const id = depoimentoEditId.value;
+  const ref = id ? arcDb.ref(`siteConfig/depoimentos/${id}`) : arcDb.ref('siteConfig/depoimentos').push();
+  ref.set(item).then(() => closeDepoimentoModal()).catch((err) => {
+    depoimentoStatus.textContent = 'Erro ao salvar. Tente novamente.';
+    console.error(err);
   });
-  return seed;
-}
-const SEED_GALERIA = buildSeedGaleria();
-const SEED_PRODUTOS = {
-  p01: { nome: 'Copo Térmico Gravado a Laser', texto: 'Gravação precisa e resistente, ideal para uso diário ou presente.', foto: 'https://picsum.photos/seed/prod-copo/500/380', categoria: 'Gravação a Laser' },
-  p02: { nome: 'Mouse Pad Personalizado', texto: 'Traga sua marca ou arte favorita para o dia a dia.', foto: 'https://picsum.photos/seed/prod-mousepad/500/380', categoria: 'Mouse Pad' },
-  p03: { nome: 'Mochila Saco Infantil', texto: 'Bolsas divertidas e personalizadas para a criançada.', foto: 'https://picsum.photos/seed/prod-mochila/500/380', categoria: 'Mochila Saco Infantil' },
-  p04: { nome: 'Bodies e Toalhinhas', texto: 'Itens fofos e personalizados para o bebê.', foto: 'https://picsum.photos/seed/prod-body/500/380', categoria: 'Bodies e Toalhinhas' },
-  p05: { nome: 'Camiseta Personalizada', texto: 'Estampas exclusivas para eventos, times e uso pessoal.', foto: 'https://picsum.photos/seed/prod-camiseta/500/380', categoria: 'Camisetas' },
-  p06: { nome: 'Kit Festa na Mesa', texto: 'Conjunto completo para decorar a mesa de qualquer comemoração.', foto: 'https://picsum.photos/seed/prod-kitfesta/500/380', categoria: 'Kit Festa na Mesa' },
-  p07: { nome: 'Caneca Personalizada', texto: 'Estampe fotos, frases ou logotipo com acabamento premium.', foto: 'https://picsum.photos/seed/prod-caneca/500/380', categoria: 'Canecas Personalizadas' },
-  p08: { nome: 'Garrafa Personalizada', texto: 'Perfeita para brindes corporativos e presentes especiais.', foto: 'https://picsum.photos/seed/prod-garrafa/500/380', categoria: 'Garrafas Personalizadas' },
-  p09: { nome: 'Lembrancinha Personalizada', texto: 'Para casamentos, chás e aniversários com carinho no detalhe.', foto: 'https://picsum.photos/seed/prod-lembranca/500/380', categoria: 'Lembrancinhas' },
-  p10: { nome: 'Mini Calendário Personalizado', texto: 'Brindes de fim de ano personalizados com a sua marca.', foto: 'https://picsum.photos/seed/prod-calendario/500/380', categoria: 'Mini Calendários' },
-  p11: { nome: 'Cartão de Visita', texto: 'Design profissional que causa a primeira boa impressão.', foto: 'https://picsum.photos/seed/prod-cartao/500/380', categoria: 'Cartões de Visita' },
-  p12: { nome: 'Panfleto Personalizado', texto: 'Material impresso para divulgação com arte exclusiva.', foto: 'https://picsum.photos/seed/prod-panfleto/500/380', categoria: 'Panfletos' },
-  p13: { nome: 'Placa Pix', texto: 'Praticidade e identidade visual para o seu ponto de venda.', foto: 'https://picsum.photos/seed/prod-pix/500/380', categoria: 'Placas Pix' },
-  p14: { nome: 'Tags Personalizadas', texto: 'Etiquetas personalizadas para produtos e embalagens.', foto: 'https://picsum.photos/seed/prod-tag/500/380', categoria: 'Tags' },
-};
-const SEED_DEPOIMENTOS = {
-  t1: { nome: 'Mariana S.', texto: 'A caneca personalizada ficou perfeita, superou minhas expectativas! Atendimento super rápido.' },
-  t2: { nome: 'Rodrigo A.', texto: 'Pedi garrafas para o aniversário da empresa e todo mundo elogiou o acabamento da gravação a laser.' },
-};
-const SEED_CATEGORIAS = {
-  cat01: { label: 'Gravação a Laser' },
-  cat02: { label: 'Mouse Pad' },
-  cat03: { label: 'Mochila Saco Infantil' },
-  cat04: { label: 'Bodies e Toalhinhas' },
-  cat05: { label: 'Camisetas' },
-  cat06: { label: 'Kit Festa na Mesa' },
-  cat07: { label: 'Canecas Personalizadas' },
-  cat08: { label: 'Garrafas Personalizadas' },
-  cat09: { label: 'Lembrancinhas' },
-  cat10: { label: 'Mini Calendários' },
-  cat11: { label: 'Cartões de Visita' },
-  cat12: { label: 'Panfletos' },
-  cat13: { label: 'Placas Pix' },
-  cat14: { label: 'Tags' },
-};
-
-function seedIfEmpty(path, seed){
-  arcDb.ref(path).once('value').then((snap) => {
-    if (snap.val() === null) arcDb.ref(path).set(seed);
-  });
-}
+});
 
 /* ---------- PEDIDOS DE ORÇAMENTO ---------- */
 const STATUS_LABELS = { novo: 'Novo', andamento: 'Em andamento', concluido: 'Concluído' };
@@ -476,20 +394,57 @@ orcamentosListEl.addEventListener('click', (e) => {
   }
 });
 
+/* ---------- SEEDS ---------- */
+const CATEGORY_DEFS = [
+  { label: 'Gravação a Laser',       slug: 'laser',     nomeProduto: 'Copo Térmico Gravado a Laser',    descricao: 'Gravação precisa e resistente, ideal para uso diário ou presente.',         prodSeed: 'prod-copo' },
+  { label: 'Mouse Pad',              slug: 'mousepad',  nomeProduto: 'Mouse Pad Personalizado',          descricao: 'Traga sua marca ou arte favorita para o dia a dia.',                        prodSeed: 'prod-mousepad' },
+  { label: 'Mochila Saco Infantil',  slug: 'mochila',   nomeProduto: 'Mochila Saco Infantil',            descricao: 'Bolsas divertidas e personalizadas para a criançada.',                      prodSeed: 'prod-mochila' },
+  { label: 'Bodies e Toalhinhas',    slug: 'body',      nomeProduto: 'Bodies e Toalhinhas',              descricao: 'Itens fofos e personalizados para o bebê.',                                 prodSeed: 'prod-body' },
+  { label: 'Camisetas',              slug: 'camiseta',  nomeProduto: 'Camiseta Personalizada',           descricao: 'Estampas exclusivas para eventos, times e uso pessoal.',                    prodSeed: 'prod-camiseta' },
+  { label: 'Kit Festa na Mesa',      slug: 'festa',     nomeProduto: 'Kit Festa na Mesa',                descricao: 'Conjunto completo para decorar a mesa de qualquer comemoração.',             prodSeed: 'prod-kitfesta' },
+  { label: 'Canecas Personalizadas', slug: 'caneca',    nomeProduto: 'Caneca Personalizada',             descricao: 'Estampe fotos, frases ou logotipo com acabamento premium.',                  prodSeed: 'prod-caneca' },
+  { label: 'Garrafas Personalizadas',slug: 'garrafa',   nomeProduto: 'Garrafa Personalizada',            descricao: 'Perfeita para brindes corporativos e presentes especiais.',                  prodSeed: 'prod-garrafa' },
+  { label: 'Lembrancinhas',          slug: 'lembranca', nomeProduto: 'Lembrancinha Personalizada',       descricao: 'Para casamentos, chás e aniversários com carinho no detalhe.',               prodSeed: 'prod-lembranca' },
+  { label: 'Mini Calendários',       slug: 'calendario',nomeProduto: 'Mini Calendário Personalizado',    descricao: 'Brindes de fim de ano personalizados com a sua marca.',                      prodSeed: 'prod-calendario' },
+  { label: 'Cartões de Visita',      slug: 'cartao',    nomeProduto: 'Cartão de Visita',                 descricao: 'Design profissional que causa a primeira boa impressão.',                    prodSeed: 'prod-cartao' },
+  { label: 'Panfletos',              slug: 'panfleto',  nomeProduto: 'Panfleto Personalizado',           descricao: 'Material impresso para divulgação com arte exclusiva.',                      prodSeed: 'prod-panfleto' },
+  { label: 'Placas Pix',             slug: 'pix',       nomeProduto: 'Placa Pix',                        descricao: 'Praticidade e identidade visual para o seu ponto de venda.',                 prodSeed: 'prod-pix' },
+  { label: 'Tags',                   slug: 'tag',       nomeProduto: 'Tags Personalizadas',              descricao: 'Etiquetas personalizadas para produtos e embalagens.',                       prodSeed: 'prod-tag' },
+];
+
+function buildSeedCategorias(){
+  const seed = {};
+  CATEGORY_DEFS.forEach(({ label, slug, nomeProduto, descricao, prodSeed }, i) => {
+    const id = `cat${String(i + 1).padStart(2, '0')}`;
+    const fotos = { f0: `https://picsum.photos/seed/${prodSeed}/500/380` };
+    for (let n = 1; n <= 4; n++) fotos[`f${n}`] = `https://picsum.photos/seed/gal-${slug}${n}/900/900`;
+    seed[id] = { label, nomeProduto, descricao, thumbKey: 'f0', fotos };
+  });
+  return seed;
+}
+const SEED_CATEGORIAS = buildSeedCategorias();
+
+const SEED_DEPOIMENTOS = {
+  t1: { nome: 'Mariana S.', texto: 'A caneca personalizada ficou perfeita, superou minhas expectativas! Atendimento super rápido.' },
+  t2: { nome: 'Rodrigo A.', texto: 'Pedi garrafas para o aniversário da empresa e todo mundo elogiou o acabamento da gravação a laser.' },
+};
+
+function seedIfEmpty(path, seed){
+  arcDb.ref(path).once('value').then((snap) => {
+    if (snap.val() === null) arcDb.ref(path).set(seed);
+  });
+}
+
 /* ---------- ZONA DE PERIGO: RESTAURAR CATÁLOGO PADRÃO ---------- */
 const resetCatalogoBtn = document.getElementById('resetCatalogoBtn');
 const resetCatalogoStatus = document.getElementById('resetCatalogoStatus');
 
 resetCatalogoBtn.addEventListener('click', () => {
   openConfirmModal(
-    'Isso vai substituir TODAS as categorias, produtos e fotos atuais pelos 14 padrão de fábrica. Qualquer categoria, produto ou foto que você criou ou editou será perdido. Depoimentos e pedidos de orçamento não são afetados. Essa ação não pode ser desfeita.',
+    'Isso vai substituir TODAS as categorias, produtos e fotos atuais pelos 14 padrão de fábrica. Qualquer conteúdo que você criou ou editou será perdido. Depoimentos e pedidos de orçamento não são afetados. Essa ação não pode ser desfeita.',
     () => {
       resetCatalogoStatus.textContent = 'Restaurando...';
-      Promise.all([
-        arcDb.ref('siteConfig/categorias').set(SEED_CATEGORIAS),
-        arcDb.ref('siteConfig/produtos').set(SEED_PRODUTOS),
-        arcDb.ref('siteConfig/galeria').set(SEED_GALERIA),
-      ]).then(() => {
+      arcDb.ref('siteConfig/categorias').set(SEED_CATEGORIAS).then(() => {
         resetCatalogoStatus.textContent = 'Catálogo padrão restaurado com sucesso.';
       }).catch((err) => {
         resetCatalogoStatus.textContent = 'Erro ao restaurar. Tente novamente.';
@@ -501,33 +456,22 @@ resetCatalogoBtn.addEventListener('click', () => {
 });
 
 /* ---------- LISTENERS EM TEMPO REAL ---------- */
+let refs = [];
+
 function startListening(){
-  seedIfEmpty('siteConfig/galeria', SEED_GALERIA);
-  seedIfEmpty('siteConfig/produtos', SEED_PRODUTOS);
-  seedIfEmpty('siteConfig/depoimentos', SEED_DEPOIMENTOS);
   seedIfEmpty('siteConfig/categorias', SEED_CATEGORIAS);
+  seedIfEmpty('siteConfig/depoimentos', SEED_DEPOIMENTOS);
 
-  const galeriaRef = arcDb.ref('siteConfig/galeria');
-  const produtosRef = arcDb.ref('siteConfig/produtos');
-  const depoimentosRef = arcDb.ref('siteConfig/depoimentos');
   const categoriasRef = arcDb.ref('siteConfig/categorias');
-  const orcamentosRef = arcDb.ref('orcamentos');
-  const settingsRef = arcDb.ref('siteConfig/settings');
+  const depoimentosRef = arcDb.ref('siteConfig/depoimentos');
+  const orcamentosRef  = arcDb.ref('orcamentos');
+  const settingsRef    = arcDb.ref('siteConfig/settings');
 
-  galeriaRef.on('value', (snap) => {
-    dataCache.galeria = Object.entries(snap.val() || {}).map(([id, v]) => ({ id, ...v }));
-    renderCollection('galeria', document.getElementById('galeriaList'), document.getElementById('galeriaCount'), 'Nenhum trabalho cadastrado.');
-  });
-  produtosRef.on('value', (snap) => {
-    dataCache.produtos = Object.entries(snap.val() || {}).map(([id, v]) => ({ id, ...v }));
-    renderCollection('produtos', document.getElementById('produtosList'), document.getElementById('produtosCount'), 'Nenhum produto cadastrado.');
-  });
-  depoimentosRef.on('value', (snap) => {
-    dataCache.depoimentos = Object.entries(snap.val() || {}).map(([id, v]) => ({ id, ...v }));
-    renderCollection('depoimentos', document.getElementById('depoimentosList'), document.getElementById('depoimentosCount'), 'Nenhum depoimento cadastrado.');
-  });
   categoriasRef.on('value', (snap) => {
     renderCategorias(Object.entries(snap.val() || {}).map(([id, v]) => ({ id, ...v })));
+  });
+  depoimentosRef.on('value', (snap) => {
+    renderDepoimentos(Object.entries(snap.val() || {}).map(([id, v]) => ({ id, ...v })));
   });
   orcamentosRef.on('value', (snap) => {
     renderOrcamentos(Object.entries(snap.val() || {}).map(([id, v]) => ({ id, ...v })));
@@ -536,7 +480,7 @@ function startListening(){
     renderSettings(snap.val());
   });
 
-  refs = [galeriaRef, produtosRef, depoimentosRef, categoriasRef, orcamentosRef, settingsRef];
+  refs = [categoriasRef, depoimentosRef, orcamentosRef, settingsRef];
 }
 
 function stopListening(){
