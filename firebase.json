@@ -1,0 +1,16 @@
+{
+  "hosting": {
+    "target": "arcpersonalizados",
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      ".claude/**",
+      "CLAUDE.md"
+    ]
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  }
+}

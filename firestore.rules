@@ -1,0 +1,474 @@
+rules_version = '2';
+
+// ================================================================
+// Firestore COMPARTILHADO entre 5 apps no mesmo projeto Firebase
+// (fb-general-stores): Ápice (apice_*), LealChocoArt (lealchocoart_*),
+// CentroComercial (centrocomercial_*), Ellen Cavalcanti (ellen_*) e
+// ARC Personalizados (arc_*). Um único banco, sem isolamento por
+// projeto — cada app já prefixa suas próprias coleções para nunca
+// colidir por nome, e cada bloco declara só funções com nomes
+// prefixados pra não colidir entre si.
+//
+// Este arquivo é IDÊNTICO nos repositórios (Apice/firestore.rules,
+// LealChocoArt/firestore.rules, CentroComercial/firestore.rules,
+// Ellen/firestore.rules, Arc/firestore.rules) de propósito: um `firebase deploy --only
+// firestore:rules` substitui o ruleset do projeto INTEIRO, não só as
+// regras de quem está fazendo o deploy — se cada app deployasse só
+// as suas próprias regras, o deploy de um apagaria o acesso dos
+// outros (foi exatamente o bug que motivou unificar num arquivo só).
+//
+// Ao editar: sempre mude aqui E replique a mesma edição nos outros
+// repos antes de fazer deploy de qualquer um deles.
+// ================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================================
+    // Ápice
+    // ============================================================
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/apice_users/$(request.auth.uid));
+    }
+
+    // Reading `.data` on a missing document errors out and denies everything,
+    // so existence is checked first.
+    function hasProfile() {
+      return isSignedIn() && exists(/databases/$(database)/documents/apice_users/$(request.auth.uid));
+    }
+
+    // `ativo` is no longer managed anywhere in the app, so a profile without
+    // the field counts as active instead of locking the person out.
+    function isActiveUser() {
+      return hasProfile() && userDoc().data.get('ativo', true) == true;
+    }
+
+    function isSocio() {
+      return isActiveUser() && userDoc().data.get('role', '') == 'socio';
+    }
+
+    // Portfolio cases are public marketing content shown on the landing page.
+    match /apice_portfolio/{caseId} {
+      allow read: if true;
+      allow write: if isActiveUser();
+    }
+
+    // Leads are created by the team, from the CRM or by converting a contact
+    // message — never written directly by the public.
+    match /apice_leads/{leadId} {
+      allow read, write: if isActiveUser();
+    }
+
+    // Activity timeline (and anything else nested under a lead) follows the
+    // lead's own rule. Firestore rules do NOT cascade into subcollections, so
+    // without this the `atividades` subcollection would fall through to the
+    // deny-all at the bottom of the file and every write would come back as
+    // "não autorizado" — a symptom with nothing to do with login or role.
+    match /apice_leads/{leadId}/{sub=**} {
+      allow read, write: if isActiveUser();
+    }
+
+    // The public contact form writes here anonymously; only the team reads
+    // or removes messages (removal happens once a message is acted on).
+    match /apice_contactMessages/{messageId} {
+      allow read, delete: if isActiveUser();
+      allow create: if
+        request.resource.data.nome is string &&
+        request.resource.data.nome.size() > 0 &&
+        request.resource.data.nome.size() < 200 &&
+        request.resource.data.email is string &&
+        request.resource.data.email.size() < 200 &&
+        request.resource.data.keys().hasOnly(['nome', 'email', 'empresa', 'tipoProjeto', 'mensagem', 'criadoEm']);
+    }
+
+    // Day-to-day operational data: any authenticated, active team member.
+    match /{collection}/{docId} {
+      allow read, write: if isActiveUser() &&
+        collection in [
+          'apice_projects', 'apice_prospects', 'apice_tasks', 'apice_timeEntries', 'apice_calendarEvents',
+          'apice_deliveries', 'apice_proposals', 'apice_pricing', 'apice_alignments',
+          'apice_boardGroups', 'apice_boardItems', 'apice_ideas'
+        ];
+    }
+
+    // Nested delivery version history follows the parent delivery's rules.
+    match /apice_deliveries/{deliveryId}/versions/{versionId} {
+      allow read, write: if isActiveUser();
+    }
+
+    // Proposal versions and team feedback live under the proposal document.
+    match /apice_proposals/{proposalId}/{sub=**} {
+      allow read, write: if isActiveUser();
+    }
+
+    // Legacy nested task subcollections (comments, removed from the UI) still
+    // resolve through the parent task's rule for any historical docs.
+    match /apice_tasks/{taskId}/{sub=**} {
+      allow read, write: if isActiveUser();
+    }
+
+    // Sensitive financial and client-credential data is restricted to socios.
+    match /{collection}/{docId} {
+      allow read, write: if isSocio() &&
+        collection in ['apice_credentials', 'apice_invoices', 'apice_costs', 'apice_contracts'];
+    }
+
+    // Audit log is append-only. Anyone active can write an entry (every role
+    // makes edits worth logging), but only socios read the trail back — same
+    // bar as other sensitive/strategic data (invoices, costs, contracts).
+    match /apice_auditLog/{entryId} {
+      allow read: if isSocio();
+      allow create: if isActiveUser();
+      allow update, delete: if false;
+    }
+
+    // Push notification tokens: one document per device, written by the person
+    // who owns it and read only by the Cloud Functions that send the "waiting
+    // for your vote" notifications (Admin SDK bypasses these rules). Reading is
+    // socio-only because the collection maps people to devices; writing is open
+    // to any active user, since everyone registers their own device.
+    match /apice_pushTokens/{tokenId} {
+      allow read: if isSocio();
+      allow write: if isActiveUser();
+    }
+
+    // Links públicos de acompanhamento do projeto: o id do documento É o token
+    // secreto que vai pro cliente, e o conteúdo é só `{ projectId }`. Quem lê o
+    // acompanhamento é a Cloud Function `publicProjectStatus` pelo Admin SDK
+    // (ignora estas regras) — nunca o navegador do cliente, que jamais toca no
+    // Firestore. Aqui, portanto, só o time: sócio lista e revoga.
+    //
+    // Sócio e não usuário ativo porque o id do documento é um SEGREDO: liberar
+    // leitura pra qualquer usuário logado entregaria todos os links ativos de
+    // uma vez, e o link é a única coisa entre um estranho e o andamento de um
+    // projeto de cliente.
+    match /apice_projectShares/{token} {
+      allow read, write: if isSocio();
+    }
+
+    // Instagram profile research (prospecção): a Cloud Function callable roda o
+    // crawl inteiro e escreve o resultado via Admin SDK (ignora estas regras) —
+    // o client nunca grava direto, só lê pra acompanhar o progresso ao vivo e
+    // reabrir análises antigas sem gastar crédito da Apify de novo.
+    match /apice_igResearch/{docId} {
+      allow read: if isActiveUser();
+      // Só a Cloud Function (via Admin SDK, ignora estas regras) cria um
+      // relatório novo — o client não pode fabricar um "concluído" sem
+      // passar pelo crawl de verdade. Editar o texto do relatório já salvo
+      // (ou excluí-lo) é permitido direto pelo client.
+      allow create: if false;
+      allow update, delete: if isActiveUser();
+    }
+
+    // Shared dropdown defaults: everyone on the team reads them so forms can
+    // render; only socios change them.
+    match /apice_settings/{docId} {
+      allow read: if isActiveUser();
+      allow write: if isSocio();
+    }
+
+    // Solutions catalogue that backs the Ideias screen (what the company
+    // builds, fed into the AI prompt). Same bar as settings: everyone reads,
+    // only socios edit — it's strategic/commercial content.
+    match /apice_solutions/{solutionId} {
+      allow read: if isActiveUser();
+      allow write: if isSocio();
+    }
+
+    // Internal handbook (Regimento Interno): the rules of the house. Everyone
+    // active reads it — a freelancer needs to know how the company works — and
+    // only socios write it, same bar as settings and the solutions catalogue.
+    match /apice_handbook/{sectionId} {
+      allow read: if isActiveUser();
+      allow write: if isSocio();
+    }
+
+    // Acervo (`/acervo`): a biblioteca de arquivos da casa — logo, modelos,
+    // documentos, fotos, vídeos. Todo mundo do time lê E envia: a logo e os
+    // modelos são justamente o que um freelancer precisa pra entregar no
+    // padrão da casa, e quem envia costuma ser quem acabou de produzir o
+    // arquivo. Só sócio EXCLUI, porque excluir aqui apaga o binário no Storage
+    // junto e não existe desfazer (ver `AssetsService.excluir`) — a regra do
+    // Storage não consegue fazer essa distinção sem ler o perfil a cada
+    // operação de arquivo, então é aqui que ela mora.
+    match /apice_assets/{assetId} {
+      allow read, create, update: if isActiveUser();
+      allow delete: if isSocio();
+    }
+
+    // Invites gate who may join. Socios manage them; a signed-in person may
+    // read only the invite addressed to their own e-mail.
+    match /apice_invites/{email} {
+      allow read: if isSocio() || (isSignedIn() && request.auth.token.email.lower() == email);
+      allow write: if isSocio();
+    }
+
+    // Users can read the team directory; only socios manage accounts/roles.
+    // Exception: on first sign-in a person creates their own profile from a
+    // matching invite, which is also how they get their role.
+    match /apice_users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isActiveUser());
+      allow write: if isSocio();
+      allow create: if isSignedIn()
+        && request.auth.uid == userId
+        && exists(/databases/$(database)/documents/apice_invites/$(request.auth.token.email.lower()))
+        && request.resource.data.email == request.auth.token.email.lower()
+        && request.resource.data.role ==
+             get(/databases/$(database)/documents/apice_invites/$(request.auth.token.email.lower())).data.role;
+    }
+
+    // ============================================================
+    // LealChocoArt
+    // ============================================================
+
+    match /lealchocoart_products/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /lealchocoart_locations/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /lealchocoart_scheduleTemplate/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /lealchocoart_scheduleExceptions/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /lealchocoart_scheduleExtras/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /lealchocoart_orders/{id} {
+      allow read, update, delete: if request.auth != null;
+      allow create: if true;
+    }
+    // Cópia pública e reduzida (sem telefone) de um pedido, pra
+    // página de acompanhamento sem login. `get` (buscar pelo código
+    // exato, que a pessoa já tem em mãos) é liberado; `list` fica
+    // fechado pra ninguém enumerar a coleção inteira de pedidos.
+    match /lealchocoart_orderTracking/{code} {
+      allow get: if true;
+      allow list: if false;
+      allow create: if true;
+      allow update: if request.auth != null;
+      allow delete: if false;
+    }
+    match /lealchocoart_pushTokens/{token} {
+      // Um documento por dispositivo, escrito pelo próprio dono ao se
+      // inscrever no Cloud Messaging. Só o admin lê (mapeia pessoas
+      // pra dispositivos) — o mesmo padrão do apice_pushTokens.
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+    match /lealchocoart_ingredients/{id} {
+      allow read, write: if request.auth != null;
+    }
+    match /lealchocoart_packagingItems/{id} {
+      allow read, write: if request.auth != null;
+    }
+    match /lealchocoart_lossEvents/{id} {
+      allow read, write: if request.auth != null;
+    }
+    match /lealchocoart_settings/{id} {
+      allow read, write: if request.auth != null;
+    }
+
+    // ============================================================
+    // CentroComercial
+    // ============================================================
+
+    match /centrocomercial_tenants/{id} {
+      allow read, write: if request.auth != null;
+    }
+    match /centrocomercial_charges/{id} {
+      allow read, write: if request.auth != null;
+    }
+    match /centrocomercial_webhookLogs/{id} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    // ============================================================
+    // Ellen Cavalcanti — consultoria, RH, mentoria e treinamentos.
+    // Modelo: owner (a Ellen) tem acesso total; manager (equipe) pode
+    // ter a visão restrita a um subconjunto de projetos/empresas;
+    // client acessa só os próprios projetos, direto ou via empresa
+    // (companyId). Espelha o padrão já usado no projeto da Trovalim
+    // Consultoria (geovana-trovalim-prod), com nomes de função
+    // prefixados `ellen` para não colidir com os de outros apps.
+    // ============================================================
+
+    function ellenAccount() {
+      return get(/databases/$(database)/documents/ellen_users/$(request.auth.uid)).data;
+    }
+
+    function ellenCompanyId() {
+      return isSignedIn() ? ellenAccount().get('companyId', null) : null;
+    }
+
+    function ellenIsOwner() {
+      return isSignedIn() && ellenAccount().role == 'owner';
+    }
+
+    function ellenIsManager() {
+      return isSignedIn() && ellenAccount().role == 'manager';
+    }
+
+    function ellenIsStaff() {
+      return ellenIsOwner() || ellenIsManager();
+    }
+
+    function ellenManagerCanAccessProject(projectId) {
+      let acc = ellenAccount();
+      return !('projectAccess' in acc) || acc.projectAccess == null || (projectId in acc.projectAccess);
+    }
+
+    function ellenManagerCanAccessCompany(companyId) {
+      let acc = ellenAccount();
+      return !('companyAccess' in acc) || acc.companyAccess == null || (companyId in acc.companyAccess);
+    }
+
+    function ellenCanAccessProject(projectId) {
+      return ellenIsOwner() || (ellenIsManager() && ellenManagerCanAccessProject(projectId));
+    }
+
+    // Um cliente pode ser o dono direto do projeto (ownerId == seu uid) ou um
+    // colaborador de uma empresa-cliente (seu companyId == ownerId do
+    // projeto). Projetos "hidden" ficam invisíveis pro cliente, mesmo sendo o dono.
+    function ellenIsProjectOwner(projectId) {
+      let project = get(/databases/$(database)/documents/ellen_projects/$(projectId)).data;
+      return isSignedIn() && !project.get('hidden', false) &&
+        (project.ownerId == request.auth.uid || project.ownerId == ellenCompanyId());
+    }
+
+    // Users: owner lê todos; manager lê contas staff e contas client cuja
+    // companyId esteja em companyAccess (sem companyAccess = todas); um
+    // usuário lê o próprio doc. Criar/excluir conta, mudar role/
+    // projectAccess/companyAccess: só owner.
+    match /ellen_users/{userId} {
+      allow read: if isSignedIn() && (
+        request.auth.uid == userId ||
+        ellenIsOwner() ||
+        (ellenIsManager() && (
+          resource.data.get('role', '') in ['owner', 'manager'] ||
+          ellenManagerCanAccessCompany(resource.data.get('companyId', null))
+        ))
+      );
+      allow create, delete: if ellenIsOwner();
+      allow update: if ellenIsOwner() || (
+        ellenIsStaff() &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'projectAccess', 'companyAccess', 'hiddenTabs'])
+      );
+    }
+
+    // Empresas-cliente: staff tem acesso (manager restrito a companyAccess se
+    // definido); um colaborador (companyId aponta pra cá) só lê a própria
+    // empresa. Criar/excluir: só owner.
+    match /ellen_empresas/{empresaId} {
+      allow read: if isSignedIn() && (
+        ellenIsOwner() || (ellenIsManager() && ellenManagerCanAccessCompany(empresaId)) || ellenCompanyId() == empresaId
+      );
+      allow create, delete: if ellenIsOwner();
+      allow update: if ellenIsStaff();
+    }
+
+    // Projetos: staff tem acesso (manager restrito a projectAccess se
+    // definido); o cliente dono (direto ou via empresa) lê o próprio,
+    // exceto se marcado "hidden".
+    match /ellen_projects/{projectId} {
+      allow read, write: if ellenCanAccessProject(projectId);
+      allow read: if isSignedIn() && !resource.data.get('hidden', false) && (
+        resource.data.ownerId == request.auth.uid || resource.data.ownerId == ellenCompanyId()
+      );
+
+      match /messages/{msgId} {
+        allow read, create: if ellenCanAccessProject(projectId) || ellenIsProjectOwner(projectId);
+        allow update, delete: if ellenCanAccessProject(projectId);
+      }
+
+      // Exclusão: staff exclui qualquer arquivo; o cliente dono só pode
+      // excluir os que ele mesmo enviou (uploadedByRole == 'client').
+      match /files/{fileId} {
+        allow read, create: if ellenCanAccessProject(projectId) || ellenIsProjectOwner(projectId);
+        allow delete: if ellenCanAccessProject(projectId) ||
+          (ellenIsProjectOwner(projectId) && resource.data.uploadedByRole == 'client');
+        allow update: if ellenCanAccessProject(projectId);
+      }
+    }
+
+    // Envios do formulário de contato do site público: qualquer visitante
+    // (sem login) pode criar; leitura só para a equipe.
+    match /ellen_contactSubmissions/{id} {
+      allow create: if true;
+      allow read, delete: if ellenIsStaff();
+    }
+
+    // Configurações da plataforma (cor, status de projeto, cotas de
+    // armazenamento) — leitura liberada pra qualquer usuário autenticado da
+    // Ellen (formulários e badges precisam renderizar pro cliente também),
+    // escrita só pra staff.
+    match /ellen_settings/{docId} {
+      allow read: if isSignedIn();
+      allow write: if ellenIsStaff();
+    }
+
+    // Notas internas do projeto — subcoleção separada do doc principal (que
+    // o cliente dono lê) para nunca vazar conteúdo staff-only.
+    match /ellen_projects/{projectId}/internal/{docId} {
+      allow read, write: if ellenCanAccessProject(projectId);
+    }
+
+    // Quadro Kanban interno da equipe — nunca visível para clientes.
+    match /ellen_tasks/{taskId} {
+      allow read, write: if ellenIsStaff();
+    }
+
+    // Cadastro de mentorandos e acompanhamento de progresso — uso interno da
+    // equipe, nunca visível para clientes.
+    match /ellen_mentees/{menteeId} {
+      allow read, write: if ellenIsStaff();
+    }
+
+    // ============================================================
+    // ARC Personalizados
+    // ============================================================
+
+    // Catálogo (categorias, cada uma já carregando o produto
+    // representativo e suas fotos) e depoimentos: conteúdo público
+    // do site, gerenciado só pelo painel admin autenticado.
+    match /arc_categorias/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /arc_depoimentos/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    // Documento único (`settings`) com toggles de visibilidade das
+    // seções do site e as fotos do hero.
+    match /arc_siteConfig/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    // Pedidos de orçamento: visitante anônimo cria pelo modal público
+    // (contém telefone/nome, por isso não é público pra leitura);
+    // só o painel admin autenticado lê, avança status ou exclui.
+    match /arc_orcamentos/{id} {
+      allow read, update, delete: if request.auth != null;
+      allow create: if true;
+    }
+
+    // Deny everything else by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

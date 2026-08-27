@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "fb-general-stores"
+  },
+  "targets": {
+    "fb-general-stores": {
+      "hosting": {
+        "arcpersonalizados": [
+          "arcpersonalizados"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

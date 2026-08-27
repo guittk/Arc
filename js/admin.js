@@ -61,9 +61,11 @@ function renderSettings(settings){
   });
 }
 
+const siteSettingsRef = arcDb.collection('arc_siteConfig').doc('settings');
+
 Object.entries(settingCheckboxes).forEach(([key, el]) => {
   el.addEventListener('change', () => {
-    arcDb.ref(`siteConfig/settings/${key}`).set(el.checked);
+    siteSettingsRef.set({ [key]: el.checked }, { merge: true });
   });
 });
 
@@ -74,11 +76,11 @@ Object.entries(settingCheckboxes).forEach(([key, el]) => {
     const dataUrl = await resizeImage(file, 900);
     document.getElementById(`heroPhoto${n}Preview`).innerHTML = `<div class="form-thumb"><img src="${dataUrl}"></div>`;
     document.getElementById(`heroPhoto${n}Remove`).style.display = '';
-    arcDb.ref(`siteConfig/settings/hero${n}`).set(dataUrl);
+    siteSettingsRef.set({ [`hero${n}`]: dataUrl }, { merge: true });
   });
   document.getElementById(`heroPhoto${n}Remove`).addEventListener('click', () => {
     openConfirmModal(`Remover a foto ${n} do carrossel do Hero? O site volta a mostrar a imagem padrão.`, () => {
-      arcDb.ref(`siteConfig/settings/hero${n}`).remove();
+      siteSettingsRef.update({ [`hero${n}`]: firebase.firestore.FieldValue.delete() });
       document.getElementById(`heroPhoto${n}`).value = '';
     }, { title: 'Remover foto', confirmLabel: 'Remover' });
   });
@@ -167,7 +169,7 @@ categoriasListEl.addEventListener('click', (e) => {
   if (!cat) return;
   if (btn.dataset.action === 'delete'){
     openConfirmModal(`Excluir a categoria "${cat.label}" e todas as suas fotos? Essa ação não pode ser desfeita.`, () => {
-      arcDb.ref(`siteConfig/categorias/${cat.id}`).remove();
+      arcDb.collection('arc_categorias').doc(cat.id).delete();
     });
   } else if (btn.dataset.action === 'edit'){
     openCatModal(cat);
@@ -270,7 +272,7 @@ catForm.addEventListener('submit', (e) => {
   }
 
   const id = catEditId.value;
-  const ref = id ? arcDb.ref(`siteConfig/categorias/${id}`) : arcDb.ref('siteConfig/categorias').push();
+  const ref = id ? arcDb.collection('arc_categorias').doc(id) : arcDb.collection('arc_categorias').doc();
   ref.set(item).then(() => closeCatModal()).catch((err) => {
     catStatus.textContent = 'Erro ao salvar. Tente com fotos menores.';
     console.error(err);
@@ -314,7 +316,7 @@ document.getElementById('depoimentosList').addEventListener('click', (e) => {
   const dep = depoimentosCache.find(d => d.id === btn.dataset.id);
   if (!dep) return;
   if (btn.dataset.action === 'delete'){
-    openConfirmModal(`Excluir o depoimento de "${dep.nome}"?`, () => arcDb.ref(`siteConfig/depoimentos/${dep.id}`).remove());
+    openConfirmModal(`Excluir o depoimento de "${dep.nome}"?`, () => arcDb.collection('arc_depoimentos').doc(dep.id).delete());
   } else {
     openDepoimentoModal(dep);
   }
@@ -342,7 +344,7 @@ depoimentoForm.addEventListener('submit', (e) => {
   if (!nome || !texto){ depoimentoStatus.textContent = 'Preencha todos os campos.'; return; }
   const item = { nome, texto };
   const id = depoimentoEditId.value;
-  const ref = id ? arcDb.ref(`siteConfig/depoimentos/${id}`) : arcDb.ref('siteConfig/depoimentos').push();
+  const ref = id ? arcDb.collection('arc_depoimentos').doc(id) : arcDb.collection('arc_depoimentos').doc();
   ref.set(item).then(() => closeDepoimentoModal()).catch((err) => {
     depoimentoStatus.textContent = 'Erro ao salvar. Tente novamente.';
     console.error(err);
@@ -387,10 +389,10 @@ orcamentosListEl.addEventListener('click', (e) => {
   const orc = orcamentosCache.find(o => o.id === btn.dataset.id);
   if (!orc) return;
   if (btn.dataset.action === 'delete'){
-    openConfirmModal(`Excluir o pedido de orçamento de "${orc.nome || 'cliente'}"?`, () => arcDb.ref(`orcamentos/${orc.id}`).remove());
+    openConfirmModal(`Excluir o pedido de orçamento de "${orc.nome || 'cliente'}"?`, () => arcDb.collection('arc_orcamentos').doc(orc.id).delete());
   } else if (btn.dataset.action === 'status'){
     const next = STATUS_NEXT[orc.status] || 'andamento';
-    arcDb.ref(`orcamentos/${orc.id}/status`).set(next);
+    arcDb.collection('arc_orcamentos').doc(orc.id).update({ status: next });
   }
 });
 
@@ -429,9 +431,13 @@ const SEED_DEPOIMENTOS = {
   t2: { nome: 'Rodrigo A.', texto: 'Pedi garrafas para o aniversário da empresa e todo mundo elogiou o acabamento da gravação a laser.' },
 };
 
-function seedIfEmpty(path, seed){
-  arcDb.ref(path).once('value').then((snap) => {
-    if (snap.val() === null) arcDb.ref(path).set(seed);
+function seedCollectionIfEmpty(collectionName, seed){
+  arcDb.collection(collectionName).limit(1).get().then((snap) => {
+    if (snap.empty){
+      const batch = arcDb.batch();
+      Object.entries(seed).forEach(([id, item]) => batch.set(arcDb.collection(collectionName).doc(id), item));
+      batch.commit();
+    }
   });
 }
 
@@ -444,7 +450,12 @@ resetCatalogoBtn.addEventListener('click', () => {
     'Isso vai substituir TODAS as categorias, produtos e fotos atuais pelos 14 padrão de fábrica. Qualquer conteúdo que você criou ou editou será perdido. Depoimentos e pedidos de orçamento não são afetados. Essa ação não pode ser desfeita.',
     () => {
       resetCatalogoStatus.textContent = 'Restaurando...';
-      arcDb.ref('siteConfig/categorias').set(SEED_CATEGORIAS).then(() => {
+      arcDb.collection('arc_categorias').get().then((snap) => {
+        const batch = arcDb.batch();
+        snap.forEach((doc) => batch.delete(doc.ref));
+        Object.entries(SEED_CATEGORIAS).forEach(([id, item]) => batch.set(arcDb.collection('arc_categorias').doc(id), item));
+        return batch.commit();
+      }).then(() => {
         resetCatalogoStatus.textContent = 'Catálogo padrão restaurado com sucesso.';
       }).catch((err) => {
         resetCatalogoStatus.textContent = 'Erro ao restaurar. Tente novamente.';
@@ -459,31 +470,26 @@ resetCatalogoBtn.addEventListener('click', () => {
 let refs = [];
 
 function startListening(){
-  seedIfEmpty('siteConfig/categorias', SEED_CATEGORIAS);
-  seedIfEmpty('siteConfig/depoimentos', SEED_DEPOIMENTOS);
+  seedCollectionIfEmpty('arc_categorias', SEED_CATEGORIAS);
+  seedCollectionIfEmpty('arc_depoimentos', SEED_DEPOIMENTOS);
 
-  const categoriasRef = arcDb.ref('siteConfig/categorias');
-  const depoimentosRef = arcDb.ref('siteConfig/depoimentos');
-  const orcamentosRef  = arcDb.ref('orcamentos');
-  const settingsRef    = arcDb.ref('siteConfig/settings');
-
-  categoriasRef.on('value', (snap) => {
-    renderCategorias(Object.entries(snap.val() || {}).map(([id, v]) => ({ id, ...v })));
+  const unsubCategorias = arcDb.collection('arc_categorias').onSnapshot((snap) => {
+    renderCategorias(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
   });
-  depoimentosRef.on('value', (snap) => {
-    renderDepoimentos(Object.entries(snap.val() || {}).map(([id, v]) => ({ id, ...v })));
+  const unsubDepoimentos = arcDb.collection('arc_depoimentos').onSnapshot((snap) => {
+    renderDepoimentos(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
   });
-  orcamentosRef.on('value', (snap) => {
-    renderOrcamentos(Object.entries(snap.val() || {}).map(([id, v]) => ({ id, ...v })));
+  const unsubOrcamentos = arcDb.collection('arc_orcamentos').onSnapshot((snap) => {
+    renderOrcamentos(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
   });
-  settingsRef.on('value', (snap) => {
-    renderSettings(snap.val());
+  const unsubSettings = siteSettingsRef.onSnapshot((snap) => {
+    renderSettings(snap.data());
   });
 
-  refs = [categoriasRef, depoimentosRef, orcamentosRef, settingsRef];
+  refs = [unsubCategorias, unsubDepoimentos, unsubOrcamentos, unsubSettings];
 }
 
 function stopListening(){
-  refs.forEach(ref => ref.off());
+  refs.forEach(unsub => unsub());
   refs = [];
 }

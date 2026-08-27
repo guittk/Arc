@@ -288,7 +288,7 @@ quoteForm.addEventListener('submit', (e) => {
     criadoEm: Date.now(),
   };
   quoteStatus.textContent = 'Enviando...';
-  arcDb.ref('orcamentos').push().set(pedido).then(() => {
+  arcDb.collection('arc_orcamentos').add(pedido).then(() => {
     quoteFormWrap.style.display = 'none';
     quoteSuccess.style.display = '';
   }).catch((err) => {
@@ -341,15 +341,20 @@ renderTestimonials();
 
 /* ---------- CARREGA CONTEÚDO REAL DO FIREBASE ---------- */
 if (typeof arcDb !== 'undefined'){
-  arcDb.ref('siteConfig').once('value').then((snap) => {
-    const data = snap.val() || {};
-    let catalogDirty = false;
-    if (data.categorias){ categorias = Object.values(data.categorias); catalogDirty = true; }
-    if (catalogDirty){ renderCatalog(); renderCatalogGallery(); }
-    if (data.depoimentos){
-      depoimentos = Object.values(data.depoimentos);
+  Promise.all([
+    arcDb.collection('arc_categorias').get(),
+    arcDb.collection('arc_depoimentos').get(),
+    arcDb.collection('arc_siteConfig').doc('settings').get(),
+  ]).then(([categoriasSnap, depoimentosSnap, settingsSnap]) => {
+    if (!categoriasSnap.empty){
+      categorias = categoriasSnap.docs.map((doc) => doc.data());
+      renderCatalog();
+      renderCatalogGallery();
+    }
+    if (!depoimentosSnap.empty){
+      depoimentos = depoimentosSnap.docs.map((doc) => doc.data());
       renderTestimonials();
     }
-    applySettings(data.settings);
+    applySettings(settingsSnap.data());
   }).catch((err) => console.error('Erro ao carregar conteúdo do Firebase:', err));
 }
