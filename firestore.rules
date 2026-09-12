@@ -1,21 +1,22 @@
 rules_version = '2';
 
 // ================================================================
-// Firestore COMPARTILHADO entre 5 apps no mesmo projeto Firebase
+// Firestore COMPARTILHADO entre 6 apps no mesmo projeto Firebase
 // (fb-general-stores): Ápice (apice_*), LealChocoArt (lealchocoart_*),
-// CentroComercial (centrocomercial_*), Ellen Cavalcanti (ellen_*) e
-// ARC Personalizados (arc_*). Um único banco, sem isolamento por
-// projeto — cada app já prefixa suas próprias coleções para nunca
-// colidir por nome, e cada bloco declara só funções com nomes
-// prefixados pra não colidir entre si.
+// CentroComercial (centrocomercial_*), Ellen Cavalcanti (ellen_*),
+// ARC Personalizados (arc_*) e Woc Estofados (woc_*). Um único banco,
+// sem isolamento por projeto — cada app já prefixa suas próprias
+// coleções para nunca colidir por nome, e cada bloco declara só
+// funções com nomes prefixados pra não colidir entre si.
 //
 // Este arquivo é IDÊNTICO nos repositórios (Apice/firestore.rules,
 // LealChocoArt/firestore.rules, CentroComercial/firestore.rules,
-// Ellen/firestore.rules, Arc/firestore.rules) de propósito: um `firebase deploy --only
-// firestore:rules` substitui o ruleset do projeto INTEIRO, não só as
-// regras de quem está fazendo o deploy — se cada app deployasse só
-// as suas próprias regras, o deploy de um apagaria o acesso dos
-// outros (foi exatamente o bug que motivou unificar num arquivo só).
+// Ellen/firestore.rules, Arc/firestore.rules, Woc/firestore.rules) de
+// propósito: um `firebase deploy --only firestore:rules` substitui o
+// ruleset do projeto INTEIRO, não só as regras de quem está fazendo o
+// deploy — se cada app deployasse só as suas próprias regras, o
+// deploy de um apagaria o acesso dos outros (foi exatamente o bug que
+// motivou unificar num arquivo só).
 //
 // Ao editar: sempre mude aqui E replique a mesma edição nos outros
 // repos antes de fazer deploy de qualquer um deles.
@@ -199,6 +200,21 @@ service cloud.firestore {
     match /apice_assets/{assetId} {
       allow read, create, update: if isActiveUser();
       allow delete: if isSocio();
+    }
+
+    // MARKETING — plano de postagens (`/marketing`): a linha editorial da
+    // casa. Três coleções, mesma régua do regimento e do catálogo de soluções
+    // (todo mundo do time lê, só sócio escreve): é estratégia da empresa, não
+    // trabalho de projeto.
+    //
+    //   apice_contentPillars  — os tipos de conteúdo (o que se posta às terças)
+    //   apice_postSuggestions — a fila de pautas de cada tipo
+    //   apice_postingSlots    — a grade da semana (dia + hora -> tipo)
+    match /{collection}/{docId} {
+      allow read: if isActiveUser() &&
+        collection in ['apice_contentPillars', 'apice_postSuggestions', 'apice_postingSlots'];
+      allow write: if isSocio() &&
+        collection in ['apice_contentPillars', 'apice_postSuggestions', 'apice_postingSlots'];
     }
 
     // Invites gate who may join. Socios manage them; a signed-in person may
@@ -464,6 +480,51 @@ service cloud.firestore {
     match /arc_orcamentos/{id} {
       allow read, update, delete: if request.auth != null;
       allow create: if true;
+    }
+
+    // ============================================================
+    // Woc Estofados
+    // ============================================================
+
+    // Pedidos de orçamento: visitante anônimo cria pelo formulário
+    // público (contém nome/telefone, por isso não é público pra
+    // leitura); só o painel admin autenticado lê, avança status ou
+    // exclui.
+    match /woc_orcamentos/{id} {
+      allow read, update, delete: if request.auth != null;
+      allow create: if true;
+    }
+
+    // Conteúdo público do site (serviços/portfólio, categorias,
+    // depoimentos e configurações gerais) — leitura livre, escrita só
+    // pelo painel admin autenticado.
+    match /woc_servicos/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /woc_categorias/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /woc_depoimentos/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /woc_siteConfig/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // ============================================================
+    // Beach — roteiro/simulador de viagem para Martim de Sá.
+    // Uso pessoal, sem login. Um único documento carrega o estado
+    // inteiro do simulador serializado em JSON (sem dado sensível —
+    // é um orçamento de viagem), por isso leitura e escrita são
+    // liberadas sem autenticação.
+    // ============================================================
+
+    match /beach_state/{id} {
+      allow read, write: if true;
     }
 
     // Deny everything else by default.
